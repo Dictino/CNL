@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.11.4
+# v0.12.10
 
 using Markdown
 using InteractiveUtils
@@ -13,10 +13,16 @@ macro bind(def, element)
     end
 end
 
+# ╔═╡ c09c0e20-d8be-11ea-11be-0966527e6f2d
+using Plots
+
 # ╔═╡ 889652b2-dbe8-11ea-0835-e966a39af471
 md"""# Problema de estabilidad absoluta de Lur`e
 ## Partimos de una planta con función de transferencia
 """
+
+# ╔═╡ bf0a5c82-d8bc-11ea-3b1c-b397e3b526fa
+H(s)=(s+3)/(s^2+7s+10)
 
 # ╔═╡ 9999f2c0-dbdd-11ea-04a5-dd56cf1eae5c
 md"""# Conjeturas A-K
@@ -24,67 +30,6 @@ md"""# Conjeturas A-K
 + Se calcula el número de polos $n$ en el semiplano derecho (inestables)
 + El criterio de Nyquist dice que la planta es estable si la respuesta en frecuecia rodea al punto $-1/K+0*i$ $n$ veces en sentido antihorario.
 """
-
-# ╔═╡ 235f7e60-dcdf-11ea-2af4-73fc564d9c84
-#plotly()
-
-# ╔═╡ 66f0b770-d8c5-11ea-0ee3-7ba9b6dfb585
-md"""# Criterio del circulo
-## Antes de empezar comprueba que:
-+ Como es una funcion de transferencia ya es contolable/observable (OK)
-+ No hay integradores ni realimentación directa $$d=0$$
-¿Es estable? Usa los casos A y B. Si no lo es usa los casos C y D.
-
-Cada caso de los que se puede usar da un rango posible de ganancias
-"""
-
-# ╔═╡ 00b900b0-d8c6-11ea-0e42-0f4bfaf17fd2
-md"## Planta estable"
-
-# ╔═╡ ed754f20-db56-11ea-02fa-3581c244dcbd
-md"""### Caso A
-$$0=k_1<k_2$$ 
-La recta ha de quedar a la izquierda
-"""
-
-# ╔═╡ b47374ee-db55-11ea-2b8f-5b38e3a2c5a0
-md"""### Caso B
-$$k_1<0<k_2$$ 
-El círculo ha de rodear la respuesta en frecuencia
-"""
-
-# ╔═╡ 1ae51110-d98c-11ea-3b02-1ddccacadb56
-md"## Planta inestable"
-
-# ╔═╡ f9938e60-d98b-11ea-1e6d-2fc1399f7bef
-md"""### Caso C
-$$0<k_1 \le k_2$$ 
-
-Como es inestable habrá $n$ polos en el semiplano derecho.
-El círculo ha de **estar rodeado** por la respuesta en frecuencia $n$ veces en sentido antihorario.
-"""
-
-# ╔═╡ c45e9020-d989-11ea-028f-5f36703d75da
-md"""### Caso D
-$$k_1<k_2<0$$ 
-
-Es como el caso C pero con todos los signos cambiados y H cambiado por -H:
-El círculo ha de **estar rodeado** por la respuesta en frecuencia (de -H) $n$ veces en sentido antihorario.
-"""
-
-# ╔═╡ 8e2736c0-d8bb-11ea-2fde-43a428dd9281
-md"""# Criterio de popov
-## Antes de empezar comprueba que:
-+ Como es una funcion de transferencia ya es contolable/observable
-+ Hay a lo sumo un integrador y si lo hay la planta se puede poner como $$d/s+ H_{estable}$$ con d>0 es decir
-    + La parte del ingregrador es positiva ($$H(s) \to \infty$$  si  $$s\to 0^+$$) 
-    + Quitando el integrador la planta es estable"""
-
-# ╔═╡ c09c0e20-d8be-11ea-11be-0966527e6f2d
-using Plots
-
-# ╔═╡ bf0a5c82-d8bc-11ea-3b1c-b397e3b526fa
-H(s)=(s+3)/(s^2+7s+10)
 
 # ╔═╡ 4628f590-dbe3-11ea-2a7a-83cabda49ee7
 function conjeturas(H,K)	
@@ -114,8 +59,21 @@ input[type=range] {
 # ╔═╡ 05d824f0-dbe0-11ea-3cd7-a7a012a706f3
 K_max_conjeturas=10
 
+# ╔═╡ 235f7e60-dcdf-11ea-2af4-73fc564d9c84
+#plotly()
+
 # ╔═╡ c87918e0-dbe3-11ea-1d12-fb31f8ea5bfb
 conjeturas(H,sliderAK*K_max_conjeturas)
+
+# ╔═╡ 66f0b770-d8c5-11ea-0ee3-7ba9b6dfb585
+md"""# Criterio del circulo
+## Antes de empezar comprueba que:
++ Como es una funcion de transferencia ya es contolable/observable (OK)
++ No hay integradores ni realimentación directa $$d=0$$
+¿Es estable? Usa los casos A y B. Si no lo es usa los casos C y D.
+
+Cada caso de los que se puede usar da un rango posible de ganancias
+"""
 
 # ╔═╡ 9ca66610-d985-11ea-0426-13ef5f785091
 function circulo(H,K1,K2,caso)	
@@ -192,6 +150,15 @@ function circulo(H,K1,K2,caso)
 	end
 end
 
+# ╔═╡ 00b900b0-d8c6-11ea-0e42-0f4bfaf17fd2
+md"## Planta estable"
+
+# ╔═╡ ed754f20-db56-11ea-02fa-3581c244dcbd
+md"""### Caso A
+$$0=k_1<k_2$$ 
+La recta ha de quedar a la izquierda
+"""
+
 # ╔═╡ 9975e6e0-db57-11ea-30e1-3ffbd104839c
 K_maxA=100
 
@@ -203,6 +170,12 @@ k1a=K_maxA*sliderA
 
 # ╔═╡ b642eb40-d988-11ea-26a4-374a74d5dc08
 circulo(H,0,k1a,'A')
+
+# ╔═╡ b47374ee-db55-11ea-2b8f-5b38e3a2c5a0
+md"""### Caso B
+$$k_1<0<k_2$$ 
+El círculo ha de rodear la respuesta en frecuencia
+"""
 
 # ╔═╡ bd8ef6f0-dbb8-11ea-3fe0-3b17ccdb1fcd
 begin
@@ -228,6 +201,17 @@ end
 # ╔═╡ 9d833cf0-db03-11ea-3b28-33343306f4dc
 circulo(H,k1b,k2b,'B')
 
+# ╔═╡ 1ae51110-d98c-11ea-3b02-1ddccacadb56
+md"## Planta inestable"
+
+# ╔═╡ f9938e60-d98b-11ea-1e6d-2fc1399f7bef
+md"""### Caso C
+$$0<k_1 \le k_2$$ 
+
+Como es inestable habrá $n$ polos en el semiplano derecho.
+El círculo ha de **estar rodeado** por la respuesta en frecuencia $n$ veces en sentido antihorario.
+"""
+
 # ╔═╡ 1be6ec20-dbba-11ea-2479-ed82409ebdd7
 begin
 	K_maxC1=50
@@ -252,6 +236,14 @@ end
 # ╔═╡ e3f469a0-dbb9-11ea-30bb-813e5688c466
 circulo(H,k1c,k2c,'C')
 
+# ╔═╡ c45e9020-d989-11ea-028f-5f36703d75da
+md"""### Caso D
+$$k_1<k_2<0$$ 
+
+Es como el caso C pero con todos los signos cambiados y H cambiado por -H:
+El círculo ha de **estar rodeado** por la respuesta en frecuencia (de -H) $n$ veces en sentido antihorario.
+"""
+
 # ╔═╡ 245ff590-dbba-11ea-1deb-1976fc8d165d
 begin
 	K_maxD1=100
@@ -275,6 +267,14 @@ end
 
 # ╔═╡ e660d5c0-dbb9-11ea-2b91-5d86b094cb03
 circulo(H,k1d,k2d,'D')
+
+# ╔═╡ 8e2736c0-d8bb-11ea-2fde-43a428dd9281
+md"""# Criterio de popov
+## Antes de empezar comprueba que:
++ Como es una funcion de transferencia ya es contolable/observable
++ Hay a lo sumo un integrador y si lo hay la planta se puede poner como $$d/s+ H_{estable}$$ con d>0 es decir
+    + La parte del ingregrador es positiva ($$H(s) \to \infty$$  si  $$s\to 0^+$$) 
+    + Quitando el integrador la planta es estable"""
 
 # ╔═╡ 497f9250-d8bc-11ea-194d-77979b94814d
 function popov(H,K,alpha)
