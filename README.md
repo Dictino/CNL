@@ -1,5 +1,3 @@
-md"""
-
 # CNL
 Herramientas del curso de [CNL](http://portal.uned.es/portal/page?_pageid=93,70656202&_dad=portal&_schema=PORTAL&idAsignatura=31104178&idTitulacion=310401) del [Máster en Ingeniería de Sistemas y Control UNED/UCM](https://cv4.ucm.es/moodle/course/view.php?id=4056)
 
@@ -27,5 +25,3 @@ Y se abrirá pluto en el navegador, desde ahí se puede seleccionar el notebook 
 ![pluto](https://github.com/Dictino/CNL/blob/main/Im%C3%A1genes/pluto.png?raw=true)
 
 ¡A disfrutarlo!
-
-"""
