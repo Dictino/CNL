@@ -12,9 +12,9 @@ Esto tardará un rato (sobre todo con mala conexión a internet y si se usa wind
 
 Cuando acabe podeis lanzar pluto:
 
-```julia> using Pluto
+``` julia> using Pluto
 
-julia> Pluto.run()```
+julia> Pluto.run() ```
 
 Y se abrirá pluto en el navegador, desde ahí se puede seleccionar el notebook que se desea abrir (poniendo por ejemplo la url de github de dicho notebook o descargándolo en el ordenador y usando dihcha ruta).
 
