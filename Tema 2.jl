@@ -79,13 +79,20 @@ end
 begin
 	gr()
 	contour(x, y, V1, fill = true)
-	contour!(x,y,V1,levels=[L1],linewidth=3,color=:red)
+	contour!(x,y,V1,levels=[L1],linewidth=3,color=:red, ratio=1)
 end
 
 # ╔═╡ 2ec228f0-defd-11ea-329f-53576ab14004
 md"Curvas aviertas
 
 $$V(x) \nrightarrow \infty$$ cuando $$x\to \infty$$"
+
+# ╔═╡ ca2fea72-3655-11eb-0984-a532e1f9efcc
+md"""Por ejemplo 
+
+$V_2(x_1,x_2)=\frac{x_1^2}{1+x_1^2}+x_2^2$
+
+Ya que si $x_1\to \pm\infty$, $V_2 \to 1+x_2^2 \ne   \infty$"""
 
 # ╔═╡ 204e6710-defe-11ea-1fb0-43c7ef863786
 V2(x1,x2)=x1^2/(1+x1^2)+x2^2;
@@ -102,14 +109,14 @@ end
 # ╔═╡ f3bcc450-df00-11ea-0080-03b54212b9ed
 begin
 	plotly()
-	surface(x2,y2,V2)
+	surface(x2,y2,V2,ratio=1)
 end
 
 # ╔═╡ eb00be70-df00-11ea-0ce9-3b0a79a0f4a3
 begin
 	gr()
 	contour(x2, y2, V2, fill = true)
-	contour!(x2,y2,V2,levels=[L2],linewidth=3,color=:red)
+	contour!(x2,y2,V2,levels=[L2],linewidth=3,color=:red) #, ratio=1)
 end
 
 # ╔═╡ d8678810-defc-11ea-05b2-51373f754e61
@@ -128,7 +135,7 @@ end
 begin
 	gr() 
 	contour(x, y, f, fill = true)
-	contour!(x,y,f,levels=[0],linewidth=3,color=:red)
+	contour!(x,y,f,levels=[0],linewidth=3,color=:red, ratio=1)
 end
 
 # ╔═╡ 440c2010-df04-11ea-2550-6f679efd6b07
@@ -223,7 +230,7 @@ end
 # ╔═╡ 93e7ebb0-dfc6-11ea-26f1-f7e281edf001
 begin
 	gr()
-	flechas(f_ejemplo1,[],-2,2,-2,2;N=20)
+	flechas(f_ejemplo1,[],[-2,2,-2,2];N=20)
 	contour!(x3,y3,V2,levels=[L3],linewidth=3,color=:red)
 	contour!(x3,y3,dV2,levels=[0],linewidth=3,color=:green)
 end
@@ -300,12 +307,13 @@ begin
 	contour!(x4, y4, V1, fill = false)
 	contour!(x4,y4,V1,levels=[L4],linewidth=3,color=:red)
 	contour!(x4,y4,dV1,levels=[0],linewidth=3,color=:green)
-	plot!(title="L=$(L4)")
+	plot!(title="L=$(L4)",ratio=1)
 end
 
 # ╔═╡ 0edbfe90-dfd8-11ea-038a-97c39cddb672
-md"""con L=0.6 V no aumenta
-R es la región en la que \dot v=0 que al elegir el l adecuado se reduce a x1=0 el resto es igual que el caso anterior.
+md"""con L=0.6, V no aumenta
+
+R es la región en la que \dot v=0 que al elegir el l adecuado se reduce a $x_1=0$ el resto es igual que el caso anterior.
 """
 
 # ╔═╡ 42ab643e-dfd8-11ea-0ed7-392d94c7904e
@@ -314,13 +322,13 @@ begin
 	flechas(f_ejemplo1,[],[-2,2,-2,2],N=20)
 	contour!(x3,y3,V2,levels=[L3],linewidth=3,color=:red)
 	contour!(x3,y3,V1,levels=[L4],linewidth=3,color=:red)
-	plot!(title="Comparación de regiones")
+	plot!(title="Comparación de regiones",ratio=1)
 end
 
 # ╔═╡ Cell order:
 # ╠═02c15be0-defd-11ea-004b-45c4e09aa541
-# ╠═a96a7e30-d639-11ea-08df-5d727910849c
-# ╠═28fccf20-d63c-11ea-3311-411f89a63431
+# ╟─a96a7e30-d639-11ea-08df-5d727910849c
+# ╟─28fccf20-d63c-11ea-3311-411f89a63431
 # ╟─309959f0-defd-11ea-34c3-71eeda7b523b
 # ╠═cd88fade-defd-11ea-2097-25b2d1eac285
 # ╠═ce5fe800-deff-11ea-0b19-7fc23b14bd06
@@ -328,6 +336,7 @@ end
 # ╠═5b26b050-d7eb-11ea-2488-b7da296fed24
 # ╠═2e580002-defe-11ea-1b3d-d5ec461e0715
 # ╟─2ec228f0-defd-11ea-329f-53576ab14004
+# ╟─ca2fea72-3655-11eb-0984-a532e1f9efcc
 # ╠═204e6710-defe-11ea-1fb0-43c7ef863786
 # ╠═f3bcc450-df00-11ea-0080-03b54212b9ed
 # ╠═ca99149e-df02-11ea-39a0-179e6a7d1344
@@ -355,7 +364,7 @@ end
 # ╟─f2777960-dfcc-11ea-089a-af9cb98c26e7
 # ╟─9370bbb0-dfcd-11ea-3079-d3d74eee20ea
 # ╟─f9362140-dfcf-11ea-2882-77e3c638d875
-# ╠═503ad610-dfd6-11ea-1021-5fb2a45bc262
+# ╟─503ad610-dfd6-11ea-1021-5fb2a45bc262
 # ╠═bf615090-dfd7-11ea-12bb-11d922c37139
 # ╠═f0dd5060-dfd7-11ea-03d8-63269e0c3394
 # ╠═a4399020-dfd7-11ea-2e36-ddc90140e91d
