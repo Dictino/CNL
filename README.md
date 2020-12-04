@@ -18,6 +18,6 @@ julia> Pluto.run()```
 
 Y se abrirá pluto en el navegador, desde ahí se puede seleccionar el notebook que se desea abrir (poniendo por ejemplo la url de github de dicho notebook o descargándolo en el ordenador y usando dihcha ruta).
 
-![pluto](poner foto)
+![pluto](https://github.com/Dictino/CNL/blob/main/Im%C3%A1genes/pluto.png)
 
 ¡A disfrutarlo!
