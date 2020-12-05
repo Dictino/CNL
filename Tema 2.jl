@@ -83,7 +83,7 @@ begin
 end
 
 # ╔═╡ 2ec228f0-defd-11ea-329f-53576ab14004
-md"Curvas aviertas
+md"Curvas abiertas
 
 $$V(x) \nrightarrow \infty$$ cuando $$x\to \infty$$"
 
