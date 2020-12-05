@@ -20,8 +20,25 @@ julia> using Pluto
 julia> Pluto.run()
 ```
 
-Y se abrirá pluto en el navegador, desde ahí se puede seleccionar el notebook que se desea abrir (poniendo por ejemplo la url de github de dicho notebook o descargándolo en el ordenador y usando dicha ruta).
+Y se abrirá pluto en el navegador:
 
 ![pluto](https://github.com/Dictino/CNL/blob/main/Im%C3%A1genes/pluto.png?raw=true)
+
+Desde ahí se puede seleccionar el notebook que se desea abrir, o bien descargando los ficheros en vuesto ordenador o poniendo por ejemplo la url de github de dicho notebook:
+
+https://github.com/Dictino/CNL/blob/main/Tema%201.jl
+https://github.com/Dictino/CNL/blob/main/Tema%202.jl
+https://github.com/Dictino/CNL/blob/main/Tema%203.jl
+https://github.com/Dictino/CNL/blob/main/Tema%204.jl
+https://github.com/Dictino/CNL/blob/main/Tema%205.jl
+https://github.com/Dictino/CNL/blob/main/Tema%206.jl
+
+Si queréis probarlo **sin instalar nada** en vuestro ordenador (no es la opción recomendada, pero es muy útil si queréis verlo en una tableta, teléfono o en un ordenador en el que no queréis instalar software)
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Dictino/pluto-on-binder/407bc61?urlpath=pluto)
+
+Ojo que binder **no es persistente**, si hacéis un cambio y queréis guardarlo no uséis el botón de guardar sino el de exportar:
+
+![pluto](https://github.com/Dictino/CNL/blob/main/Im%C3%A1genes/Boton_exportar.png?raw=true)
 
 ¡A disfrutarlo!
