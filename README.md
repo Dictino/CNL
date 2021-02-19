@@ -48,7 +48,7 @@ Ojo que binder **no es persistente**, si hacéis un cambio y queréis guardarlo 
 
 ¡A disfrutarlo!
 
-Una guía para conocer la sintaxis básica de Julia es el siguiente [tutorial en castellano] (https://hedero.webs.upv.es/julia-basico/), o también [estos en inglés] (https://julialang.org/learning/tutorials/) (el primero "From zero to Julia!" merece bastante la pena).
+Una guía para conocer la sintaxis básica de Julia es el siguiente [tutorial en castellano](https://hedero.webs.upv.es/julia-basico/), o también [estos en inglés](https://julialang.org/learning/tutorials/) (el primero "From zero to Julia!" merece bastante la pena).
 
-Un recurso fundamental es la [documentación] (https://docs.julialang.org/en/v1/) que es muy completa y exausiva y si se quiere concoer el lenguaje el manual es de obligada lectura, para los que dominéis otros lenguajes puede ser interesante la [sección] (https://docs.julialang.org/en/v1/manual/noteworthy-differences/).
+Un recurso fundamental es la [documentación](https://docs.julialang.org/en/v1/) que es muy completa y exausiva y si se quiere concoer el lenguaje el manual es de obligada lectura, para los que dominéis otros lenguajes puede ser interesante la [sección](https://docs.julialang.org/en/v1/manual/noteworthy-differences/).
  

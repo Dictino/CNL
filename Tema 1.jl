@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.10
+# v0.12.20
 
 using Markdown
 using InteractiveUtils
@@ -13,6 +13,9 @@ macro bind(def, element)
     end
 end
 
+# ╔═╡ 88629870-3490-11eb-2215-d765d59a440c
+using PlutoUI
+
 # ╔═╡ 1be7c0c0-d4ba-11ea-1e43-ef66c35b0830
 using Plots
 
@@ -23,11 +26,8 @@ using OrdinaryDiffEq
 # ╔═╡ 6cbb32f0-d665-11ea-3f24-41cbe1910b80
 using LinearAlgebra
 
-# ╔═╡ 88629870-3490-11eb-2215-d765d59a440c
-using PlutoUI
-
 # ╔═╡ 6ba02e80-d4cf-11ea-19cb-33028d3dc67d
-md"# _Cosas que ver en el primer tema_
+md"# _Primer tema_
 + ¿Qué es una ecuación diferencial y como se resuelve?
     * Euler
     * Métodos mejores
@@ -35,29 +35,31 @@ md"# _Cosas que ver en el primer tema_
 + Explosión en tiempo finito
 + Linealización
 + Ejemplos
-    * Barco
     * Generador
 + Ciclo límite
     * Van der Pool
 + Sistemas discretos
-    * Ecuación logística, el camino hacia el CAOS"
+    * Ecuación logística, el camino hacia el Caos"
 
 # ╔═╡ 7db3fdb0-d4d2-11ea-21fc-597c55dda572
 md"# ¿Qué es una ecuación diferencial?
 
-A nosotros nos interesan sistemas como este:
+En la asignatura nos interesan sistemas como este:
 
 $$\frac{dx}{dt}=f(x,t)$$
 
 $$x(0)=x_0$$
 
-Donde x es un vector y la derovada respecto al tiempo se suele escribir como $$\dot x$$ "
+Donde x es un vector y la derivada respecto al tiempo se suele escribir como $$\dot x$$ 
+
+Las ecuaciones diferenciales son útiles cuando es fácil expresar cómo cambia una magnitud en el tiempo, pero no tanto cual es el estado $x(t)$ directamente, que es lo que ocurre en casi todos los sistemas físicos.
+"
 
 # ╔═╡ 76079a70-d4cf-11ea-2645-8f43c78eae52
 md" ## Euler
-Si la función $$f$$ tiene buen comportamiento (lo veremos más adelante cuando repasemos la existencia y unicidad) hay una solución de la ecuación que es contínua y derivable y usando taylor:
+Si la función $$f$$ tiene buen comportamiento (lo veremos más adelante cuando repasemos la existencia y unicidad) hay una solución de la ecuación que es continua y derivable y usando taylor:
 
-$$x(\Delta t)=x(0) + f(X0)\Delta t + o(\Delta t^2)$$
+$$x(\Delta t)=x(0) + f(x(0),0)\Delta t + o(\Delta t^2)$$
 
 Si se toman pasos pequeños y repetimos el procedimiento:
 
@@ -68,13 +70,14 @@ y llamando $$t_n$$ a $$n\Delta t$$ y $$x_n$$ a $$x(t_n)$$
 
 $$x_{n+1} \approx x_n + f(x_n,t_n)\Delta t + o(\Delta t^2)$$
 
-### Ejemplo
+### Ejemplo de implementación sencilla
+Para el caso escalar
 
 "
 
 # ╔═╡ 66e9ffd0-d4d7-11ea-09c0-03ebaacab879
-function Euler(f,x0,tf,Δt)
-	t=0:Δt:10
+function euler(f,x0,tf,Δt)
+	t=0:Δt:tf
 	x=zeros(size(t))
 	x[1]=x0
 	for n=1:(length(t)-1)
@@ -83,17 +86,22 @@ function Euler(f,x0,tf,Δt)
 	return (x,t)
 end
 
+# ╔═╡ 0b94f1c0-7113-11eb-13da-c5c5b95ebbf5
+md"Vamos a ver si funciona resolviendo
+$\dot x=-x+sin(t)$ "
+
 # ╔═╡ e885f5b0-d4d4-11ea-06d6-9ddf9619961f
 begin
 	f(x,t)=-x+sin(t)
-	f(u,p,t)=f(u,t) #para luego
+		
+	f(x,p,t)=f(x,t) #¡Despacho múltiple! (lo necesitamos para luego)
 end
 
 # ╔═╡ b99fc9b0-d4d9-11ea-0e18-cfd5af90188f
 tf=10
 
 # ╔═╡ 3be6b020-d4d8-11ea-3356-23afd148ebc9
-@bind N html"<input type=range min=1 max=100>"
+@bind N Slider(1:100)
 
 # ╔═╡ 220f6f12-d4d9-11ea-159e-c1e1551fd732
 Δt=tf/N;
@@ -101,73 +109,117 @@ tf=10
 # ╔═╡ 23f5ece0-d4da-11ea-1330-c5d077bd3a89
 md"N=$(N) $$\to \Delta t=$$ $(Δt)"
 
+# ╔═╡ d8b5ed40-d4d7-11ea-27d4-bf594518802b
+x,t =euler(f,0,10,Δt);
+
+# ╔═╡ 2b7df180-d4d8-11ea-118f-75e8709e36c3
+plot(t,x,label="x")
+
 # ╔═╡ 455e0c30-d4d7-11ea-22ce-0d04b4e8d860
 md"## Hay métodos mejores:
 
--Ajustan los pasos automaticamente
++ Ajustan los pasos automáticamente
 
--Tienen más precisión para los mismos pasos
++ Tienen más precisión para los mismos pasos
 
--Está integrado con otras funciones como plots, permite interpolar los resultados automáticamente, etc..."
++ Están integrados con otras funciones como *plots*, permite interpolar los resultados automáticamente, etc...
 
-# ╔═╡ 04501380-d63c-11ea-2ed8-e11f02de80a4
+Vamos a usar la librería OrdinaryDiffEq que es parte de DifferencialEquation.jl
+"
 
+# ╔═╡ c90980d0-d637-11ea-112d-c336b2080d87
+begin
+	x0 = 0
+	tspan = (0.0,10.0)
+	#ojo se necesita f(x,p,t) donde p son los parámetros (no tenemos)
+	#de ahí la definición de antes
+	prob = ODEProblem(f,x0,tspan);
+	sol = solve(prob,Tsit5(), reltol=1e-8, abstol=1e-8);
+	sol.u #su u es nuestro x
+end
+
+# ╔═╡ 1f44a88e-7114-11eb-0ac2-d12cd3fb40ef
+sol.t
+
+# ╔═╡ 4a7f5f72-0e0c-11eb-2b7c-4d7214c09c4b
+sol(2.751) #¡se puede usar como una función continua de t!
 
 # ╔═╡ 51059990-0e0c-11eb-2d55-89ac739619c7
 
 
+# ╔═╡ a92de300-d63c-11ea-2446-5b099592d734
+plot(sol, xaxis="t",yaxis="x(t)",label="x",legend=false)
+
 # ╔═╡ 09980bd0-d63d-11ea-0752-1d033ee00cc9
-md"## Sistema de segundo orden con dos polos"
+md"## Sistema de segundo orden con dos polos
+
+En un sistema lineal
+
+$\dot x=Ax$
+
+La solución es $x=x_0e^{At}$ y su carácter depende de los autovalores, es decir las soluciones de $|A- \lambda \mathbb{1} |=0$
+
+La estabilidad depende de que la parte real de los $\lambda$ sea negativa (los autovalores estén en el semiplano izquierdo del plano complejo)
+
+Nos interesa el sistema lineal segundo orden porque es simple y contiene todos los casos de interés:
+
+$\dot x_1=x_2$
+$\dot x_2=p_1x_1+p_2x_2$
+"
 
 # ╔═╡ e6afc70e-d63d-11ea-0d36-738b13f0de30
 function f_lineal(x,p,t)
-	dx=[0.0;0.0]
+	dx=[0.0 ; 0.0]
 	dx[1]=x[2];
-	dx[2]=+p[1]*x[1]+p[2]*x[2]
+	dx[2]=p[1]*x[1]+p[2]*x[2]
 	return dx
 end
 
-# ╔═╡ 22398f60-d665-11ea-3352-714b467152b3
-#eigen([0 1; -(real^2+imag^2) -2*real ])
-
-# ╔═╡ 57ffd1f0-d637-11ea-1a81-7dd574291417
-md""" `es real = ` $(@bind es_real html"<input type=checkbox >")"""
-
-# ╔═╡ 5b26b050-d7eb-11ea-2488-b7da296fed24
-@bind slider1 html"<input type=range min=-1 max=1 step=0.05>"
-
-# ╔═╡ 84c3c3d0-d7eb-11ea-3f35-29559df926c3
-@bind slider2 html"<input type=range min=-1 max=1 step=0.05>"
+# ╔═╡ 2ff44950-7116-11eb-3ad9-c3e145cdae4e
+md"
+Polos Reales? $(@bind son_reales CheckBox())
+$(@bind slider1 Slider(-1:0.05:1))
+$(@bind slider2 Slider(-1:0.05:1))
+"
 
 # ╔═╡ a0573fe0-d6a2-11ea-057e-5140c323c005
 begin
-	if es_real==true #el polinomio es (s-real1)*(s-real2)=s^2+(-real1-real2)s + real1*real2 --> k2= real1 + real2 k1=real1*real2
+	if son_reales==true 
+		# el polinomio es (s-real1)*(s-real2)
+		# s^2+(-real1-real2)s + real1*real2 --> k2= real1 + real2 k1=real1*real2
 		k2= slider1 + slider2
 		k1=-slider1*slider2
-	else #el polinomio es (s-real-imag*im)*(s-real+imag*im)
-		# es decir s^2 - 2*real*s + real^2 + imag^2 --> k2=-2*real k1=-real^2-imag^2
+	else # el polinomio es (s-real-imag*im)*(s-real+imag*im)
+		 # es decir s^2 - 2*real*s + real^2 + imag^2 --> k2=-2*real k1=-real^2-imag^2
 		k2=2*slider1
 		k1=-slider1^2 - slider2^2
 	end
 	A=[0 1; k1 k2]
-	autovalores,_=eigen(A)
+	autovalores,_=eigen(A)  #para esto necesito LinearAlgebra
 	md"""
-	k1= $(k1)
-	k2= $(k2)
+	k1= $(k1), k2= $(k2)
+	
 	autovalores= $(autovalores)"""
 end
 
 # ╔═╡ 5a802550-d665-11ea-3f9f-b103ce80822f
-scatter(real(autovalores),imag(autovalores),grid=true,legend=false, framestyle = :origin )
+scatter(real(autovalores),imag(autovalores),
+	grid=true,legend=false, framestyle = :origin,
+	xaxis=[-1,1], yaxis=[-1,1] )
 
 # ╔═╡ 1790c760-0e0d-11eb-1c47-f5e902e158fb
-
+md" # Muy bien pero ¡Enséñame el código!
+... vosotros lo habéis querido ☺	"
 
 # ╔═╡ f5ca89e0-0e0c-11eb-32a1-fb22511f42ae
 function flechas!(figura,f,p,rangos;N=10)
 	#modifica una figura añadiendo las flechas por eso tiene una exclamación !
-	xmin,xmax,ymin,ymax=rangos
-	long=max(abs(xmax-xmin),abs(ymax-ymin))/N
+	# N es un parámetro opcional, si no se lo paso el valor es 10
+	# los otros son posicionales
+	xmin,xmax,ymin,ymax=rangos #desestructurar un iterable (explicar)
+	longitud=max(abs(xmax-xmin),abs(ymax-ymin))/N
+	
+    #hago una maya de x e ys y pongo las flechas en cada punto
 	x1s=xmin:((xmax-xmin)/N):xmax
 	x2s=ymin:((ymax-ymin)/N):ymax
 
@@ -178,28 +230,30 @@ function flechas!(figura,f,p,rangos;N=10)
 	V=[];
 	for x1 in x1s #barrido para calcular las flechas
 		for x2 in x2s
-			push!(X1,x1);
+			push!(X1,x1); #Push añade un componente al final de un vector
 			push!(X2,x2);
 			F=f([x1,x2],p,0)
-			X=0.1*F/(0.1+sqrt(F[1]^2+F[2]^2))
+			X=0.1*F/(0.1+sqrt(F[1]^2+F[2]^2)) #Saturo el tamaño de la flecha
 			push!(U,X[1]);
 			push!(V,X[2]);
 		end
 	end
-	quiver!(figura,X1,X2,quiver=(U,V), arrow=arrow(0.1*long, 0.1*long)) #añade
+	#Pinta las flechas
+	quiver!(figura,X1,X2,quiver=(U,V), arrow=arrow(0.1*longitud, 0.1*longitud))
 	return figura
 end
 
 # ╔═╡ 165464e2-0e0f-11eb-3851-3701a6c78502
-#= Es un euler modificado que integra hacia delante y hacia atrás hasta que se sale o completa un número de pasos. 
-	-hacia delante se detectan bien los PE y ciclos límite estables
-	-Hacia atrás permite ver también los intestables
-	Ajusta dt para que el paso tenga un tamaño que sea aproximadamente =#
+#= Es un euler modificado que integra hacia delante y hacia atrás
+    congtinúa integrando hasta que se sale o completa un número de pasos. 
+	   -hacia delante se detectan bien los PE y ciclos límite estables
+	   -Hacia atrás permite ver también los inestables
+	Ajusta dt para que el paso tenga un tamaño que sea aproximadamente constante=#
 
 function trayectoria(x0,f,p,rangos;N=10,pasosMax=100)
 	xmin,xmax,ymin,ymax=rangos
 	long=max(abs(xmax-xmin),abs(ymax-ymin))/N
-	x,y=x0 #saco las componentes de un vector
+	x,y=x0
 	pasos=0
 	
 	X1=[x]
@@ -207,7 +261,7 @@ function trayectoria(x0,f,p,rangos;N=10,pasosMax=100)
 	X2=[x] #parte de la trayectoria hacia atrás en el tiempo
 	Y2=[y]
 	
-	while (xmin<x<xmax) & (xmin<x<xmax) & (pasos<pasosMax)
+	while (xmin<x<xmax) & (ymin<y<ymax) & (pasos<pasosMax)
 		derivada=f([x,y],p,0)
 		dt=0.05*long/(0.1+sqrt(derivada[1]^2+derivada[2]^2))
 		Xn=[x;y]+derivada*dt
@@ -218,7 +272,7 @@ function trayectoria(x0,f,p,rangos;N=10,pasosMax=100)
 	end
 	pasos=0
 	x,y=x0
-	while (xmin<x<xmax) & (xmin<x<xmax) & (pasos<pasosMax)
+	while (xmin<x<xmax) & (ymin<y<ymax) & (pasos<pasosMax)
 		derivada=f([x,y],p,0)
 		dt=-0.05*long/(0.1+sqrt(derivada[1]^2+derivada[2]^2))
 		Xn=[x;y]+derivada*dt
@@ -231,9 +285,6 @@ function trayectoria(x0,f,p,rangos;N=10,pasosMax=100)
 	Y=append!(reverse(Y2),Y1)
 	return (X,Y)
 end
-
-# ╔═╡ 443e1200-0e16-11eb-14d1-27b178d0fffe
-append!([1 2],
 
 # ╔═╡ b51d4d90-d7f4-11ea-07aa-adcb4f418c99
 md"## Clasificación sistema de segundo orden"
@@ -255,10 +306,10 @@ md"### En el limite de la estabilidad (autovalores imaginarios puros)"
 md"Centro, polos en $$\pm i$$"
 
 # ╔═╡ 8c6fa2e0-dd75-11ea-163b-c70c276c3f2a
-md"### Caso *degeneredo*, autovalor nulo"
+md"### Caso *degenerado*, autovalor nulo"
 
 # ╔═╡ ad48c140-dd75-11ea-03fe-75a0b19f91bd
-md"""No hay un punto de equilibrio sino una "*línea de equlibrio*"
+md"""No hay un punto de equilibrio sino una "*línea de equilibrio*"
 autovalores -1 y 0"""
 
 # ╔═╡ 33f181d0-d7fb-11ea-0a51-d3a11d1613df
@@ -275,16 +326,29 @@ md"punto de silla (**Inestable**) polos en $$\pm1$$"
 
 # ╔═╡ fd823200-d7fc-11ea-1af8-c91386a02ab5
 md"""## Escape en tiempo finito
-poner explicación"""
+Consideremos la ecuación aparentemente *inocente*:
+
+$\dot x=x^2$
+
+$x_0=1$
+
+Es separable y como se vio en teoría la solución es obviamente (basta con derivar y sustituir)
+
+$x(t)=\frac{1}{1-t}$
+
+Que en t=1 se hace infinita, veámoslo
+
+"""
 
 # ╔═╡ 2647d140-d7fd-11ea-201a-5744621fbe12
 escape(x,p,t)=x^2
 
 # ╔═╡ 7c13c6b0-d7fd-11ea-0cc5-55f5ab6106fe
 begin
-	prob2 = ODEProblem(escape,1,(0,10));
+	prob2 = ODEProblem(escape,1,(0,2));
 	sol2 = solve(prob2,Tsit5(), reltol=1e-5, abstol=1e-5);
 	fig=plot(sol2.t,min.(sol2.u,10000),xlim=(0,1))
+	#saturo a 10000 para evitar que "pete"
 	ylims!(fig,(0.0,10))
 end
 
@@ -300,18 +364,18 @@ $$\dot x_2 = \frac{P_m - P_e sin(x_1)}{H}$$  """
 
 # ╔═╡ ab5bd370-dd77-11ea-034f-6153487b9658
 function generador(x,p,t)
-    dx=[0.0;0.0]
-    H=p[1]
-    Pm=p[2] #u
-    Pe=p[3]
-    dx[1]=x[2]
-    dx[2]=(1/H)*(Pm-Pe*sin(x[1]))
-	return dx
+	x1,x2=x #así es más bonito, es la forma RECOMENDADA para la legibilidad
+	H,Pm,Pe=p #Pm es u de la teoría
+    dx1=x2
+    dx2=(1/H)*(Pm-Pe*sin(x1))
+	#el return es opcional (si no se pone devuelve la última línea
+	#pero me gusta ser explícito
+	return [dx1; dx2] 
 end
 
 # ╔═╡ 1668b190-dd7a-11ea-3c80-c5f082ec8647
 md"""## Puntos de Equilibrio
-Los puntos *interesantes* es donde las felchas se desvanecen, es decir donde la derivada se anula:
+Los puntos *interesantes* es donde las flechas se **desvanecen**, es decir donde la derivada se anula:
 
 $$0= x_2$$
 
@@ -326,53 +390,60 @@ soluciones tipo 2: $$(\pi-arcsin\left(\frac{P_m}{P_e}\right)+2n\pi,0)$$
 """
 
 # ╔═╡ 351f5332-dd7c-11ea-2fc4-c9dc71684f23
-@bind sliderMotor html"<input type=range min=-1.1 max=1.1 step=0.05>"
+@bind sliderMotor Slider(-1.1:0.05:1.1)
 
 # ╔═╡ 5fd238f0-dd7b-11ea-2a00-a587ee59c261
 begin
-	plot(-2*pi:0.01:2*pi,sin)
+	plot(-2*pi:0.01:2*pi,sin,legend=false)
 	plot!([-2*pi,2*pi],[sliderMotor,sliderMotor ])
+	title!("Pm/Pe=$sliderMotor")
 end
 
 # ╔═╡ db58def0-dd78-11ea-335b-4140d22d9a78
-md""" En el punto de equilibrio f=0 así que usando taylor:
-...
+md""" En el punto de equilibrio $f(x^*)=0$ así que usando taylor:
 
+definiendo $\delta x=x-x^*$
 
-"""
+$\delta \dot x= \dot x=f(x^*+\delta x) \approx f(x^*)+\nabla f(x^*)\delta x=A\delta x$ 
 
-# ╔═╡ 8ce3af70-de3b-11ea-17e1-e318972faa86
-md""" Calculando la matriz jacobiana:
+donde A es la matriz jacobiana
+
+$$A=\begin{pmatrix} 
+\frac{df_1}{dx_1}  & ... & \frac{df1}{dx_n} \\
+\vdots             & \ddots   &  \vdots \\
+\frac{df_n}{dx_1}  & ... &\frac{df_n}{dx_n}
+\end{pmatrix}$$
+
+que en el caso del motor es:
 
 $$A=\begin{pmatrix} 
 0                     &  1 \\ 
 \frac{P_ecos(x^*)}{H}  &  0
 \end{pmatrix}$$
 
-$$B=\begin{pmatrix} 
-1 \\ 
-\frac{1}{H}
-\end{pmatrix}$$
 """
 
 # ╔═╡ 33af7e82-d7f5-11ea-12bb-5982575f35d3
 md"""## Ciclo límite
 Ecuación de Van der Pol
+
+$\dot x_1=x_2$
+
+$\dot x_2=\frac{-kx_1+c(1-x_1^2)x_2}{m}$
+
 """
 
 # ╔═╡ 3d70984e-d7f5-11ea-3243-9d3932ee155b
 function van_der_pol(x,p,t)
-    dx=[0.0;0.0]
-    m=p[1]
-    c=p[2]
-    k=p[3]
-    dx[1]=x[2]
-    dx[2]=(1/m)*(-k*x[1]+c*(1-x[1]^2)*x[2])
-	return dx
+    m,c,k=p
+	x1,x2=x
+    dx1=x2
+    dx2=(1/m)*(-k*x1+c*(1-x1^2)*x2)
+	return [dx1;dx2]
 end
 
 # ╔═╡ 713de9b0-3490-11eb-041b-c7083c829ba7
-md"""# El camino hacia el caos
+md"""# El camino hacia el Caos
 Presentado por el Dr. Chaos ☺
 
 Ecuación logística
@@ -386,14 +457,8 @@ $y \in [0, 1]$
 # ╔═╡ 98165ef0-3490-11eb-0e57-259fcf7361c2
 logistica(y,r)=r*y*(1-y)
 
-# ╔═╡ b8326ede-3490-11eb-1e0b-530752ed836e
-@bind r Slider(0:0.05:4,default=2)
-
-# ╔═╡ a07f3bc0-3490-11eb-11b3-6bedb92502cb
-let  #introduce un scope nuevo
-	x=0:0.01:1
-	fig=plot(x,logistica.(x,r),ylim=(0,1),label=:none, title="r=$r")
-end
+# ╔═╡ 10625a80-7122-11eb-3601-273ea4390a23
+md"Lo bueno de las ecuaciones en diferencias es que es trivial resolverlas, basta con iterar"
 
 # ╔═╡ ea63b4f0-3490-11eb-26a8-6f5e1f2d3c05
 function trayectoria(y_inicial,r,pasos)
@@ -408,7 +473,7 @@ end
 # ╔═╡ 915aa560-0e0e-11eb-18d4-e3a899ee2c1c
 function trayectorias!(figura,f,p,rangos;N=10)
 	#modifica una figura añadiendo las trayectorias por eso tiene una exclamación !
-	    #barrido para las soluciones
+	#barrido para las soluciones
 	xmin,xmax,ymin,ymax=rangos
 	N=round(N/2);
 	x1s=xmin:((xmax-xmin)/N):xmax
@@ -484,8 +549,9 @@ begin
 		  Pe*cos(x1a) 0]
 	   autov1,_1=eigen(A1)
 	end
-	md" El primer PE es inestable (punto de silla), los autovalores son:
-	$(autov1[1]) y $(autov1[2])"
+	fases((x,p,t)->A1*x,[]) #otra forma e hacerlo con una función anónima
+	title!("""El primer PE es inestable (silla),
+		λ1=$(autov1[1]) λ2=$(autov1[2])""")
 end
 
 # ╔═╡ 46dd7a80-de3e-11ea-0e9d-abe7496efef7
@@ -495,18 +561,26 @@ begin
 		  Pe*cos(x1b) 0]
 	   autov2,_2=eigen(A2)
 	end
-	md" El segundo PE es un centro en la aproximación lineal, los autovalores son:
-	$(autov2[1]) y $(autov2[2])"
+	fases((x,p,t)->A2*x,[]) #otra forma e hacerlo con una función anónima
+    title!("""El primer PE es un centro (en la aproximación lineal),
+	λ1=$(autov2[1]) λ2=$(autov2[2])""")
 end
-
-# ╔═╡ d252c5be-de3e-11ea-2f1d-1dbc809c9980
-fases((x,p,t)->A1*x,[])
-
-# ╔═╡ aa716bfe-de3e-11ea-0dc6-d59275895621
-fases((x,p,t)->A2*x,[],N=10)
 
 # ╔═╡ afa04610-d7f4-11ea-1cd0-e3a91d91c5c9
 fases(van_der_pol,[1.0,1.0,1.0],rangos=[-3,3,-3,3])
+
+# ╔═╡ b8326ede-3490-11eb-1e0b-530752ed836e
+@bind r s=Slider(0:0.05:4,default=2)
+
+# ╔═╡ a07f3bc0-3490-11eb-11b3-6bedb92502cb
+let  #introduce un "scope" nuevo no como begin-end lo que permite usar las mismas variables sin tener que inventar nombres nuevos
+	x=0:0.01:1
+	fig=plot(x,logistica.(x,r),xlim=(0,1),ylim=(0,1),
+		label=:none, title="r=$r",ratio=1)
+end
+
+# ╔═╡ d43266e0-3490-11eb-0d9a-59ef7a663b50
+@bind ver CheckBox(default=false)
 
 # ╔═╡ 165343ee-3491-11eb-10a7-7b4d6fef56f4
 function puntos(R)
@@ -516,30 +590,27 @@ function puntos(R)
 		yt=trayectoria(0.5,r,100)
 		k=length(yt)
 		y_est=yt[(k÷2):k]
-		append!(px,r*ones(length(y_est)))
+		append!(px,r*ones(length(y_est))) #append es como push pero añade un vector
 		append!(py,y_est)
 	end
 	return (px,py)
 end
-
-# ╔═╡ d43266e0-3490-11eb-0d9a-59ef7a663b50
-@bind ver CheckBox(default=false)
 
 # ╔═╡ e042eeee-3490-11eb-1406-058ee6753c1f
 let
 	y=trayectoria(0.5,r,50)
 	p1=plot(y,title="r=$r",marker=:dot,markersize=:2,label=:none,ylimits=(0,1))
 	k=length(y)
-	px,py=puntos(4)
-	p2=scatter()
+		p2=scatter()
 	if ver
+		px,py=puntos(4)
 		p2=scatter!(p2,px,py,legend=:none,color=:grey, alpha=0.1,
 		            linecolor=:grey, linealpha=0.1,marker=1)
 	end
 	y_estacionarios=y[(k÷2):k] #Nota ver cómo se escribe esto
 	p2=scatter!(p2,r*ones(length(y_estacionarios)),y_estacionarios,
 		        xlim=(0,4),ylim=(0,1),legend=:none,color=:red,marker=2)
-	l = @layout [a ; b]
+	l = @layout [a ; b]  
 	plot(p1,p2, layout=l, size=(650,500))
 end
 
@@ -550,20 +621,20 @@ Haciendo lo mismo una y otra vez...
 
 Primer paso, periodo 1:"""
 
-# ╔═╡ 3765e8e2-3491-11eb-00a5-274f3caf6a15
-@bind y0 Slider(0:0.05:1,default=0.5)
-
 # ╔═╡ dd340bd0-3491-11eb-31ab-5b1bf6286cf0
-@bind Niter Slider(1:50,default=1)
+@bind Niter Slider(1:50,default=1,show_value=true)
+
+# ╔═╡ 3765e8e2-3491-11eb-00a5-274f3caf6a15
+@bind y0 Slider(0:0.05:1,default=0.5,show_value=true)
 
 # ╔═╡ de04c952-3491-11eb-276b-b530d61da953
-@bind r2 Slider(0:0.05:4,default=2)
+@bind r2 Slider(0:0.05:4,default=2,show_value=true)
 
 # ╔═╡ 39b45040-3492-11eb-1e48-998b1e4b1911
 function iterar(f,N)
 	x=0:0.001:1
-	fig2=plot(x,f.(x),ylim=(0,1),label=:none, title="r=$r2")
-	plot!(fig2,[0,1],[0,1],color=:red,label=:none)
+	fig2=plot(x,f.(x),xlim=(0,1),ylim=(0,1),label=:none, title="r=$r2")
+	plot!(fig2,[0,1],[0,1],color=:red,label=:none, ratio=1)
 	
 	x=y0 #punto en el plano de la figura
 	y=0
@@ -580,55 +651,25 @@ function iterar(f,N)
 	fig2
 end
 
-# ╔═╡ f0d58740-3491-11eb-1c3f-cb167bf0da93
+# ╔═╡ 2e058370-729c-11eb-0822-793d3db17e74
 begin
-	f(x)=logistica(x,r2)
-	f2(x)=f(f(x))
-	f3(x)=f(f2(x))
-	f4(x)=f(f3(x))
-	
-	function fn(x)
-		y=x
-		for i=1:n
-			y=f(y)
-		end
-		return y
-	end
+    f1(x)=logistica(x,r2)
+	f2(x)=f1(f1(x))
+	f4(x)=f2(f2(x))
+	f8(x)=f4(f4(x))
+	f16(x)=f8(f8(x))
+	iterar(f1,Niter) # prueba con f1 f2 ...
 end
-
-# ╔═╡ d8b5ed40-d4d7-11ea-27d4-bf594518802b
-x,t =Euler(f,0,10,Δt);
-
-# ╔═╡ 2b7df180-d4d8-11ea-118f-75e8709e36c3
-plot(t,x,label="x")
-
-# ╔═╡ c90980d0-d637-11ea-112d-c336b2080d87
-begin
-	u0 = 0
-	tspan = (0.0,10.0)
-	prob = ODEProblem(f,u0,tspan);
-	sol = solve(prob,Tsit5(), reltol=1e-8, abstol=1e-8);
-	sol.u
-end
-
-# ╔═╡ 4a7f5f72-0e0c-11eb-2b7c-4d7214c09c4b
-sol(2.751) #¡se puede usar como una función continua de t!
-
-# ╔═╡ a92de300-d63c-11ea-2446-5b099592d734
-plot(sol, xaxis="t",yaxis="x(t)",label="x") # legend=false
-
-# ╔═╡ 16308440-3492-11eb-0e3f-d1a4dbb8c9df
-iterar(f,Niter) # f1 f2 y luego pasarse a fn
 
 # ╔═╡ 4c657840-3492-11eb-093d-59a4b3854b7a
 md"""En un sistema discreto la estabilidad depende de la derivada, es parecido a los sistemas continuos.
-Un punto de equilibiro $x^*$ es aquel en el que $x_{n+1}=x_n$, es decir
+Un punto de equilibrio $x^*$ es aquel en el que $x_{n+1}=x_n$, es decir
 
 $x_{n+1}=f(x_n)=x_n=x^*$
 
 Es decir que es un punto fijo de $f$, es decir $f(x^*)=x^*$
 
-Si estámos cerca de un punto de equilibrio $x_n=x^*+\delta x_n$ luego haciendo taylor:
+Si estamos cerca de un punto de equilibrio $x_n=x^*+\delta x_n$ luego haciendo taylor:
 
 $f(x^*+\delta x_n)=f(x^*) + \nabla f(x^*)\delta x_n + o(\delta x_n^2)$
 
@@ -646,11 +687,11 @@ En el caso de una variable se reduce a que $|f'(x^*)|<1$ como se intuye gráfica
 # ╔═╡ 55e2ab40-3492-11eb-2953-e9d8bd17735c
 md"En cada paso el cambio de $r$ necesario para producir una bifurcación es más pequeño.
 
-De hecho la bifurcaciñon de orden 4 es como una versión pequeña de la de orden 2 como hemos visto, si llamamos $r_n$ al $r$ que produce una bifurcación tenemos que
+De hecho la bifurcación de orden 4 es como una versión pequeña de la de orden 2 como hemos visto, si llamamos $r_n$ al $r$ que produce una bifurcación tenemos que
 
 $\frac{r_{n+2}-r_{n+1}}{r_{n+2}-r_{n+1}} \to 4.6992...$ que es la constante de Feigenbaum y que es **la misma** para muchos otros procesos esto se conoce como **Universalidad**.
 
-Como el paso sigue aproximadamente una serie geométrica la suma de infintas bifurcaciones se produce con un cambio finito de $r$ ya que:
+Como el paso sigue aproximadamente una serie geométrica la suma de infinitas bifurcaciones se produce con un cambio finito de $r$ ya que:
 
 $r_\infty-r_0 \approx \Delta r_0 +  \frac {\Delta r_0}{4.7} +\frac {\Delta r_0}{4.7^2}+\frac {\Delta r_0}{4.7^3}...=\Delta r_0 \frac {1}{1-1/4.7}\approx 1.27\Delta r_0$
 
@@ -661,8 +702,10 @@ $r_\infty-r_0 \approx \Delta r_0 +  \frac {\Delta r_0}{4.7} +\frac {\Delta r_0}{
 # ╟─7db3fdb0-d4d2-11ea-21fc-597c55dda572
 # ╟─76079a70-d4cf-11ea-2645-8f43c78eae52
 # ╠═66e9ffd0-d4d7-11ea-09c0-03ebaacab879
+# ╟─0b94f1c0-7113-11eb-13da-c5c5b95ebbf5
 # ╠═e885f5b0-d4d4-11ea-06d6-9ddf9619961f
 # ╠═b99fc9b0-d4d9-11ea-0e18-cfd5af90188f
+# ╠═88629870-3490-11eb-2215-d765d59a440c
 # ╠═3be6b020-d4d8-11ea-3356-23afd148ebc9
 # ╠═220f6f12-d4d9-11ea-159e-c1e1551fd732
 # ╟─23f5ece0-d4da-11ea-1330-c5d077bd3a89
@@ -671,27 +714,23 @@ $r_\infty-r_0 \approx \Delta r_0 +  \frac {\Delta r_0}{4.7} +\frac {\Delta r_0}{
 # ╠═2b7df180-d4d8-11ea-118f-75e8709e36c3
 # ╟─455e0c30-d4d7-11ea-22ce-0d04b4e8d860
 # ╠═159f28e2-d4db-11ea-13e6-a97e2e7f7c60
-# ╠═04501380-d63c-11ea-2ed8-e11f02de80a4
 # ╠═c90980d0-d637-11ea-112d-c336b2080d87
+# ╠═1f44a88e-7114-11eb-0ac2-d12cd3fb40ef
 # ╠═4a7f5f72-0e0c-11eb-2b7c-4d7214c09c4b
 # ╠═51059990-0e0c-11eb-2d55-89ac739619c7
 # ╠═a92de300-d63c-11ea-2446-5b099592d734
-# ╠═09980bd0-d63d-11ea-0752-1d033ee00cc9
+# ╟─09980bd0-d63d-11ea-0752-1d033ee00cc9
 # ╠═e6afc70e-d63d-11ea-0d36-738b13f0de30
 # ╠═6cbb32f0-d665-11ea-3f24-41cbe1910b80
-# ╠═22398f60-d665-11ea-3352-714b467152b3
-# ╠═5a802550-d665-11ea-3f9f-b103ce80822f
-# ╟─57ffd1f0-d637-11ea-1a81-7dd574291417
-# ╟─5b26b050-d7eb-11ea-2488-b7da296fed24
-# ╟─84c3c3d0-d7eb-11ea-3f35-29559df926c3
+# ╟─5a802550-d665-11ea-3f9f-b103ce80822f
+# ╟─2ff44950-7116-11eb-3ad9-c3e145cdae4e
 # ╟─a0573fe0-d6a2-11ea-057e-5140c323c005
-# ╠═1790c760-0e0d-11eb-1c47-f5e902e158fb
-# ╠═f5ca89e0-0e0c-11eb-32a1-fb22511f42ae
-# ╠═915aa560-0e0e-11eb-18d4-e3a899ee2c1c
-# ╠═165464e2-0e0f-11eb-3851-3701a6c78502
-# ╠═7115307e-d660-11ea-3f2f-4d4963a60e39
-# ╠═443e1200-0e16-11eb-14d1-27b178d0fffe
 # ╠═90208f82-d4ba-11ea-11e6-7f51e6ffc5d5
+# ╟─1790c760-0e0d-11eb-1c47-f5e902e158fb
+# ╠═f5ca89e0-0e0c-11eb-32a1-fb22511f42ae
+# ╠═165464e2-0e0f-11eb-3851-3701a6c78502
+# ╠═915aa560-0e0e-11eb-18d4-e3a899ee2c1c
+# ╠═7115307e-d660-11ea-3f2f-4d4963a60e39
 # ╟─b51d4d90-d7f4-11ea-07aa-adcb4f418c99
 # ╟─0b2775be-d7fb-11ea-0b82-0d2b4d544d31
 # ╟─4100c3f0-d7f5-11ea-10c3-593316528d50
@@ -707,7 +746,7 @@ $r_\infty-r_0 \approx \Delta r_0 +  \frac {\Delta r_0}{4.7} +\frac {\Delta r_0}{
 # ╟─33f181d0-d7fb-11ea-0a51-d3a11d1613df
 # ╟─fa4a8370-d7f8-11ea-12b0-fde507f287be
 # ╠═dcb4f750-d7f8-11ea-0027-47491be6b131
-# ╠═08c0cb70-d7fa-11ea-0efd-ab3b7f76a8b8
+# ╟─08c0cb70-d7fa-11ea-0efd-ab3b7f76a8b8
 # ╠═7dacbd90-d7fa-11ea-1063-e5741bf3f618
 # ╟─b6db1b70-d7fa-11ea-2bea-43295b3179a6
 # ╠═df4f1840-d7fa-11ea-1e89-3d6d103458d1
@@ -718,33 +757,29 @@ $r_\infty-r_0 \approx \Delta r_0 +  \frac {\Delta r_0}{4.7} +\frac {\Delta r_0}{
 # ╟─16d7ee1e-dd7a-11ea-13a7-197edb480651
 # ╠═ab5bd370-dd77-11ea-034f-6153487b9658
 # ╟─1668b190-dd7a-11ea-3c80-c5f082ec8647
-# ╠═5fd238f0-dd7b-11ea-2a00-a587ee59c261
 # ╟─351f5332-dd7c-11ea-2fc4-c9dc71684f23
-# ╠═f102ad80-dd78-11ea-08b5-2d95e6f1a678
+# ╟─5fd238f0-dd7b-11ea-2a00-a587ee59c261
+# ╟─f102ad80-dd78-11ea-08b5-2d95e6f1a678
 # ╟─db58def0-dd78-11ea-335b-4140d22d9a78
-# ╟─8ce3af70-de3b-11ea-17e1-e318972faa86
 # ╟─e0f77820-de3c-11ea-2124-2de08feef36a
-# ╠═d252c5be-de3e-11ea-2f1d-1dbc809c9980
 # ╟─46dd7a80-de3e-11ea-0e9d-abe7496efef7
-# ╠═aa716bfe-de3e-11ea-0dc6-d59275895621
 # ╟─33af7e82-d7f5-11ea-12bb-5982575f35d3
 # ╠═3d70984e-d7f5-11ea-3243-9d3932ee155b
 # ╠═afa04610-d7f4-11ea-1cd0-e3a91d91c5c9
 # ╟─713de9b0-3490-11eb-041b-c7083c829ba7
-# ╠═88629870-3490-11eb-2215-d765d59a440c
 # ╠═98165ef0-3490-11eb-0e57-259fcf7361c2
-# ╠═a07f3bc0-3490-11eb-11b3-6bedb92502cb
-# ╠═b8326ede-3490-11eb-1e0b-530752ed836e
+# ╟─10625a80-7122-11eb-3601-273ea4390a23
 # ╠═ea63b4f0-3490-11eb-26a8-6f5e1f2d3c05
-# ╠═165343ee-3491-11eb-10a7-7b4d6fef56f4
-# ╠═d43266e0-3490-11eb-0d9a-59ef7a663b50
+# ╠═a07f3bc0-3490-11eb-11b3-6bedb92502cb
+# ╟─b8326ede-3490-11eb-1e0b-530752ed836e
+# ╟─d43266e0-3490-11eb-0d9a-59ef7a663b50
 # ╠═e042eeee-3490-11eb-1406-058ee6753c1f
+# ╠═165343ee-3491-11eb-10a7-7b4d6fef56f4
 # ╟─315a35f0-3491-11eb-0ce1-636a82ef3dd9
-# ╠═3765e8e2-3491-11eb-00a5-274f3caf6a15
 # ╠═dd340bd0-3491-11eb-31ab-5b1bf6286cf0
+# ╠═3765e8e2-3491-11eb-00a5-274f3caf6a15
 # ╠═de04c952-3491-11eb-276b-b530d61da953
-# ╠═16308440-3492-11eb-0e3f-d1a4dbb8c9df
-# ╟─39b45040-3492-11eb-1e48-998b1e4b1911
-# ╠═f0d58740-3491-11eb-1c3f-cb167bf0da93
+# ╠═2e058370-729c-11eb-0822-793d3db17e74
+# ╠═39b45040-3492-11eb-1e48-998b1e4b1911
 # ╟─4c657840-3492-11eb-093d-59a4b3854b7a
 # ╟─55e2ab40-3492-11eb-2953-e9d8bd17735c
