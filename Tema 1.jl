@@ -542,28 +542,28 @@ begin
     dibujo
 end
 
-# ╔═╡ e0f77820-de3c-11ea-2124-2de08feef36a
+# ╔═╡ 46dd7a80-de3e-11ea-0e9d-abe7496efef7
 begin
 	if abs(Pm/Pe)<=1
 	   A1=[0 1;
 		  Pe*cos(x1a) 0]
 	   autov1,_1=eigen(A1)
-	end
-	fases((x,p,t)->A1*x,[]) #otra forma e hacerlo con una función anónima
-	title!("""El primer PE es inestable (silla),
+	   fases((x,p,t)->A1*x,[]) #otra forma e hacerlo con una función anónima
+	   title!("""El primer PE es inestable (silla),
 		λ1=$(autov1[1]) λ2=$(autov1[2])""")
+	end
 end
 
-# ╔═╡ 46dd7a80-de3e-11ea-0e9d-abe7496efef7
+# ╔═╡ 44e6bce2-800b-11eb-3651-e3ba5df8617e
 begin
 	if abs(Pm/Pe)<=1
 	   A2=[0 1;
 		  Pe*cos(x1b) 0]
 	   autov2,_2=eigen(A2)
-	end
-	fases((x,p,t)->A2*x,[]) #otra forma e hacerlo con una función anónima
-    title!("""El primer PE es un centro (en la aproximación lineal),
+	   fases((x,p,t)->A2*x,[]) #otra forma e hacerlo con una función anónima
+       title!("""El primer PE es un centro (en la aproximación lineal),
 	λ1=$(autov2[1]) λ2=$(autov2[2])""")
+	end
 end
 
 # ╔═╡ afa04610-d7f4-11ea-1cd0-e3a91d91c5c9
@@ -689,7 +689,7 @@ md"En cada paso el cambio de $r$ necesario para producir una bifurcación es má
 
 De hecho la bifurcación de orden 4 es como una versión pequeña de la de orden 2 como hemos visto, si llamamos $r_n$ al $r$ que produce una bifurcación tenemos que
 
-$\frac{r_{n+2}-r_{n+1}}{r_{n+2}-r_{n+1}} \to 4.6992...$ que es la constante de Feigenbaum y que es **la misma** para muchos otros procesos esto se conoce como **Universalidad**.
+$\frac{r_{n+2}-r_{n+1}}{r_{n+1}-r_{n}} \to 4.6992...$ que es la constante de Feigenbaum y que es **la misma** para muchos otros procesos esto se conoce como **Universalidad**.
 
 Como el paso sigue aproximadamente una serie geométrica la suma de infinitas bifurcaciones se produce con un cambio finito de $r$ ya que:
 
@@ -759,10 +759,10 @@ $r_\infty-r_0 \approx \Delta r_0 +  \frac {\Delta r_0}{4.7} +\frac {\Delta r_0}{
 # ╟─1668b190-dd7a-11ea-3c80-c5f082ec8647
 # ╟─351f5332-dd7c-11ea-2fc4-c9dc71684f23
 # ╟─5fd238f0-dd7b-11ea-2a00-a587ee59c261
-# ╟─f102ad80-dd78-11ea-08b5-2d95e6f1a678
+# ╠═f102ad80-dd78-11ea-08b5-2d95e6f1a678
 # ╟─db58def0-dd78-11ea-335b-4140d22d9a78
-# ╟─e0f77820-de3c-11ea-2124-2de08feef36a
 # ╟─46dd7a80-de3e-11ea-0e9d-abe7496efef7
+# ╟─44e6bce2-800b-11eb-3651-e3ba5df8617e
 # ╟─33af7e82-d7f5-11ea-12bb-5982575f35d3
 # ╠═3d70984e-d7f5-11ea-3243-9d3932ee155b
 # ╠═afa04610-d7f4-11ea-1cd0-e3a91d91c5c9
