@@ -92,7 +92,7 @@ begin
 		return d
 	end
 	
-	function derivada(f,x,dx,n) #multiple distpach
+	function derivada(f,x,dx,n) #multiple distpach #esto es nuevo
 		d=f
 		for i=1:n
 			d=derivada(d,x,dx)

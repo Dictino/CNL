@@ -16,38 +16,14 @@ end
 # ╔═╡ 02c15be0-defd-11ea-004b-45c4e09aa541
 using Plots
 
-# ╔═╡ 50cdc34e-df3e-11ea-0965-793860f72c45
-using ModelingToolkit
+# ╔═╡ 8aeae030-811f-11eb-0075-272d383103ef
+using PlutoUI
+
+# ╔═╡ ba6bf300-8122-11eb-0a3e-2d30a150250c
+using SymEngine
 
 # ╔═╡ 6cbb32f0-d665-11ea-3f24-41cbe1910b80
 using LinearAlgebra
-
-# ╔═╡ a96a7e30-d639-11ea-08df-5d727910849c
-function flechas(f,p,rangos;N=10)
-	#version no modificante del tema anterior
-	xmin,xmax,ymin,ymax=rangos
-	long=max(abs(xmax-xmin),abs(ymax-ymin))/N
-	x1s=xmin:((xmax-xmin)/N):xmax
-	x2s=ymin:((ymax-ymin)/N):ymax
-
-    #barrido para las flechas
-	X1=[];
-	X2=[];
-	U=[];
-	V=[];
-	for x1 in x1s #barrido para calcular las flechas
-		for x2 in x2s
-			push!(X1,x1);
-			push!(X2,x2);
-			X=f([x1,x2],p,0)
-			X=0.1*X/(0.1+sqrt(X[1]^2+X[2]^2))
-			push!(U,X[1]);
-			push!(V,X[2]);
-		end
-	end
-	p1=quiver(X1,X2,quiver=(U,V), arrow=arrow(0.1*long, 0.1*long))
-	return p1
-end
 
 # ╔═╡ 28fccf20-d63c-11ea-3311-411f89a63431
 md"# Curvas de nivel"
@@ -61,23 +37,20 @@ $$V(x)\to \infty$$ cuando $$x\to \infty$$"
 V1(x1,x2)=x1^2+x2^2
 
 # ╔═╡ ce5fe800-deff-11ea-0b19-7fc23b14bd06
-begin
-		x=-1:0.1:1
-		y=x;
-end
+x=y=-1:0.1:1
 
 # ╔═╡ c6c49460-deff-11ea-1c6d-673d863ea07b
 begin
-	plotly()
+	plotly() #Back-end interactivo de Plots
 	surface(x,y,V1)
 end
 
 # ╔═╡ 5b26b050-d7eb-11ea-2488-b7da296fed24
-@bind L1 html"<input type=range min=0 max=2 step=0.05>"
+@bind L1 Slider(0:0.05:2)
 
 # ╔═╡ 2e580002-defe-11ea-1b3d-d5ec461e0715
 begin
-	gr()
+	gr() #Back-End por defecto
 	contour(x, y, V1, fill = true)
 	contour!(x,y,V1,levels=[L1],linewidth=3,color=:red, ratio=1)
 end
@@ -97,20 +70,16 @@ Ya que si $x_1\to \pm\infty$, $V_2 \to 1+x_2^2 \ne   \infty$"""
 # ╔═╡ 204e6710-defe-11ea-1fb0-43c7ef863786
 V2(x1,x2)=x1^2/(1+x1^2)+x2^2;
 
-# ╔═╡ ca99149e-df02-11ea-39a0-179e6a7d1344
-@bind L2 html"<input type=range min=0 max=2 step=0.05>"
-
-# ╔═╡ fe41070e-df00-11ea-3be2-b72adee0837d
-begin
-		x2=-5:0.1:5
-		y2=-1:0.1:1
-end
-
 # ╔═╡ f3bcc450-df00-11ea-0080-03b54212b9ed
 begin
+	x2=-5:0.1:5
+	y2=-1:0.1:1
 	plotly()
 	surface(x2,y2,V2,ratio=1)
 end
+
+# ╔═╡ ca99149e-df02-11ea-39a0-179e6a7d1344
+@bind L2 Slider(0:0.05:2)
 
 # ╔═╡ eb00be70-df00-11ea-0ce9-3b0a79a0f4a3
 begin
@@ -120,7 +89,8 @@ begin
 end
 
 # ╔═╡ d8678810-defc-11ea-05b2-51373f754e61
-md"# Semi-Definida Vs Definida"
+md"# Semi-Definida Vs Definida
+Pensemos **antes** de pintarlo, para ver si hay *sorpresas*"
 
 # ╔═╡ 34a9ca60-df03-11ea-018c-399409d7842e
 begin
@@ -135,12 +105,12 @@ end
 begin
 	gr() 
 	contour(x, y, f, fill = true)
-	contour!(x,y,f,levels=[0],linewidth=3,color=:red, ratio=1)
+	contour!(x,y,f,levels=[0.0],linewidth=3,color=:red, ratio=1)
 end
 
 # ╔═╡ 440c2010-df04-11ea-2550-6f679efd6b07
 md"""# La Salle y región de atracción
-Partimos de ejemplo
+Partimos del ejemplo
 
 $$\dot x_1=(x_2-x_1)(1+x_1^2)^2$$
 
@@ -148,37 +118,59 @@ $$\dot x_2=-x_1+x_1^2$$
 
 """
 
-# ╔═╡ e062be10-df40-11ea-1565-3d684f59321c
-function linealizacion(f,x0,p,t)
-	n=length(x0)
-	@variables X[1:n]
-	op=f(X,p,t)
-	jac=ModelingToolkit.jacobian(op,X)
-	for i in 1:n
-	    jac=substitute.(jac,[ X[i]=>x0[i] ])
-	end
-	map(x->x.value,jac)
-end
-
 # ╔═╡ c3aa90e0-df04-11ea-0736-5176e619708a
-function f_ejemplo1(x,p,t)
-	dx1=(+x[2]-x[1])*(1+x[1]^2)^2
-    dx2=-x[1]+x[1]^2 #busca otro ejemplo
+function f_ejemplo1(x,p,t) 
+	#p y t no se usan pero es para usar la función flechas del tema anterior
+	x1,x2=x
+	dx1=(x2-x1)*(1+x1^2)^2
+    dx2=-x1+x1^2
 	return [dx1;dx2]
 end
 
+# ╔═╡ 116e9d42-812f-11eb-327c-e107809f9603
+md"## vamos a empezar a hacer cosas simbólicas (ahora que ya sabemos hacerlas a mano)"
+
+# ╔═╡ d4547220-8121-11eb-1591-ebb8d7742fcc
+function jacobiano(f,variables)
+	N=length(variables)
+	fun=f(variables,[],0)
+	M=length(fun)
+	J=[diff(fun[i],variables[j]) for i in 1:M, j in 1:N]
+end
+
+# ╔═╡ 5eebc400-8123-11eb-029e-8bd1bef4612e
+x_1,x_2=symbols("x1,x2") #permite operar simbólicamente
+
+# ╔═╡ f9dcadc0-812e-11eb-005f-d751ee820296
+J=jacobiano(f_ejemplo1,[x_1,x_2])
+
+# ╔═╡ f13ed140-81bd-11eb-200f-9fc7aa549363
+f_ejemplo1([x_1,x_2],[],0)
+
+# ╔═╡ 6eb00ba0-812b-11eb-06b8-9d782689846a
+function linealizar(f,variables,puntos)
+	#evalua el jacobiano en un punto
+	J=jacobiano(f_ejemplo1,variables)
+	for i in 1:length(variables)
+		for j in 1:length(J)
+		   J[j]=subs(J[j],variables[i],puntos[i])
+		end
+	end
+	return J
+end
+
 # ╔═╡ 83941610-df41-11ea-0f0b-636bcab6c386
-A=linealizacion(f_ejemplo1,[0;0],[],0)
+A=linealizar(f_ejemplo1,[x_1,x_2],[0,0])
 
 # ╔═╡ c4a86fb0-df42-11ea-2ee5-63a5bdd03376
 begin
-	autovalores,_=eigen(A)
+	autovalores=eigvals(Float64.(A))
 	md"Los autovalores son $autovalores"
 end
 
 # ╔═╡ 3cbc07a0-df43-11ea-0df8-5ba5311f2f43
-md"""Sabemos que es estable (localmente)
-para saber mas derivamos $V_2$ del ejemplo anterior:
+md"""Sabemos que es estable (**localmente**)
+para saber más derivamos $V_2$ del ejemplo anterior:
 
 
 $$V_2=\frac{x_1^2}{1+x_1^2}+x_2^2$$
@@ -190,8 +182,12 @@ $$\dot V_2=\frac{2x_1}{(1+x_1^2)^2}\dot x_1+2x_2\dot x_2
 
 $$=-2x_1^2(1-x_2)$$
 
-V no aumenta luego es **Estable**, pero ¿Podemos saber algo más?
+De momento a mano en el tema 4 veremos cómo decirle a la máquina que lo haga
+
 """
+
+# ╔═╡ c82134f0-8123-11eb-279a-2b03ca565783
+md"V no aumenta luego es **Estable**, pero ¿Podemos saber algo más?"
 
 # ╔═╡ a7b42e60-dfcb-11ea-2ae9-87311393dbef
 md"""# Usemos LaSalle para ver la región de atracción
@@ -202,7 +198,7 @@ Si elijo bien L V no aumenta en la región V(x)<L (las flechas no apuntan hacia 
 dV2(x1,x2)=-2x1^2*(1-x2)
 
 # ╔═╡ 9b580610-dfc5-11ea-2cfb-bb5db8322e86
-@bind L3 html"<input type=range min=0 max=2 step=0.05>"
+@bind L3 Slider(0:0.05:2)
 
 # ╔═╡ 5b862210-dfc5-11ea-3958-d5f618a37108
 begin
@@ -225,14 +221,6 @@ md"""**Ojo no siempre se detectan bien las curvas de nivel**
 begin
 	plotly()
 	surface(x3,y3,dV2)
-end
-
-# ╔═╡ 93e7ebb0-dfc6-11ea-26f1-f7e281edf001
-begin
-	gr()
-	flechas(f_ejemplo1,[],[-2,2,-2,2];N=20)
-	contour!(x3,y3,V2,levels=[L3],linewidth=3,color=:red)
-	contour!(x3,y3,dV2,levels=[0],linewidth=3,color=:green)
 end
 
 # ╔═╡ 698f68b0-dfcc-11ea-2a38-1fd314c52157
@@ -296,7 +284,7 @@ V no aumenta luego es **Estable**, pero ¿Podemos saber algo más?
 dV1(x1,x2)=2x1*(x2-x1)*(1+x1^2)^2+2x2*(-x1+x1^2)
 
 # ╔═╡ f0dd5060-dfd7-11ea-03d8-63269e0c3394
-@bind L4 html"<input type=range min=0 max=2 step=0.05>"
+@bind L4 Slider(0:0.05:2)
 
 # ╔═╡ a4399020-dfd7-11ea-2e36-ddc90140e91d
 begin
@@ -316,10 +304,101 @@ md"""con L=0.6, V no aumenta
 R es la región en la que \dot v=0 que al elegir el l adecuado se reduce a $x_1=0$ el resto es igual que el caso anterior.
 """
 
+# ╔═╡ a96a7e30-d639-11ea-08df-5d727910849c
+function flechas!(figura,f,p,rangos;N=10)
+	xmin,xmax,ymin,ymax=rangos 
+	longitud=max(abs(xmax-xmin),abs(ymax-ymin))/N
+	
+	x1s=xmin:((xmax-xmin)/N):xmax
+	x2s=ymin:((ymax-ymin)/N):ymax
+
+	X1=[];
+	X2=[];
+	U=[];
+	V=[];
+	for x1 in x1s #barrido para calcular las flechas
+		for x2 in x2s
+			push!(X1,x1); #Push añade un componente al final de un vector
+			push!(X2,x2);
+			F=f([x1,x2],p,0)
+			X=0.1*F/(0.1+sqrt(F[1]^2+F[2]^2)) #Saturo el tamaño de la flecha
+			push!(U,X[1]);
+			push!(V,X[2]);
+		end
+	end
+	quiver!(figura,X1,X2,quiver=(U,V), arrow=arrow(0.1*longitud, 0.1*longitud))
+	return figura
+end
+
+# ╔═╡ 93e7ebb0-dfc6-11ea-26f1-f7e281edf001
+begin
+	gr()
+	p1=plot()
+	flechas!(p1,f_ejemplo1,[],[-2,2,-2,2],N=20)
+	contour!(x3,y3,V2,levels=[L3],linewidth=3,color=:red)
+	contour!(x3,y3,dV2,levels=[0],linewidth=3,color=:green)
+end
+
+# ╔═╡ 8f8b3390-8130-11eb-38df-99e46c4051e0
+function trayectoria(x0,f,p,rangos;N=10,pasosMax=100)
+	xmin,xmax,ymin,ymax=rangos
+	long=max(abs(xmax-xmin),abs(ymax-ymin))/N
+	x,y=x0
+	pasos=0
+	
+	X1=[x]
+	Y1=[y]
+	X2=[x] #parte de la trayectoria hacia atrás en el tiempo
+	Y2=[y]
+	
+	while (xmin<x<xmax) & (ymin<y<ymax) & (pasos<pasosMax)
+		derivada=f([x,y],p,0)
+		dt=0.05*long/(0.1+sqrt(derivada[1]^2+derivada[2]^2))
+		Xn=[x;y]+derivada*dt
+		x,y=Xn
+		pasos=pasos+1
+		push!(X1,x)
+		push!(Y1,y)
+	end
+	pasos=0
+	x,y=x0
+	while (xmin<x<xmax) & (ymin<y<ymax) & (pasos<pasosMax)
+		derivada=f([x,y],p,0)
+		dt=-0.05*long/(0.1+sqrt(derivada[1]^2+derivada[2]^2))
+		Xn=[x;y]+derivada*dt
+		x,y=Xn
+		pasos=pasos+1
+		push!(X2,x)
+		push!(Y2,y)
+	end
+	X=append!(reverse(X2),X1) #junto ambas partes
+	Y=append!(reverse(Y2),Y1)
+	return (X,Y)
+end
+
+# ╔═╡ e4e5a27e-8130-11eb-0c8a-91d509d7e897
+function trayectorias!(figura,f,p,rangos;N=10)
+	
+	xmin,xmax,ymin,ymax=rangos
+	N=round(N/2);
+	x1s=xmin:((xmax-xmin)/N):xmax
+	x2s=ymin:((ymax-ymin)/N):ymax
+	T=10;
+	for x1 in x1s
+		for x2 in x2s 
+			X,Y=trayectoria([x1;x2],f,p,rangos,N=N,pasosMax=100)
+			figura=plot!(figura,X,Y,legend=false)
+		end
+	end 
+	return figura
+end
+
 # ╔═╡ 42ab643e-dfd8-11ea-0ed7-392d94c7904e
 begin
 	gr()
-	flechas(f_ejemplo1,[],[-2,2,-2,2],N=20)
+	p=plot()
+	flechas!(p,f_ejemplo1,[],[-2,2,-2,2],N=20)
+	trayectorias!(p,f_ejemplo1,[],[-2,2,-2,2],N=30)
 	contour!(x3,y3,V2,levels=[L3],linewidth=3,color=:red)
 	contour!(x3,y3,V1,levels=[L4],linewidth=3,color=:red)
 	plot!(title="Comparación de regiones",ratio=1)
@@ -327,7 +406,7 @@ end
 
 # ╔═╡ Cell order:
 # ╠═02c15be0-defd-11ea-004b-45c4e09aa541
-# ╟─a96a7e30-d639-11ea-08df-5d727910849c
+# ╠═8aeae030-811f-11eb-0075-272d383103ef
 # ╟─28fccf20-d63c-11ea-3311-411f89a63431
 # ╟─309959f0-defd-11ea-34c3-71eeda7b523b
 # ╠═cd88fade-defd-11ea-2097-25b2d1eac285
@@ -340,19 +419,24 @@ end
 # ╠═204e6710-defe-11ea-1fb0-43c7ef863786
 # ╠═f3bcc450-df00-11ea-0080-03b54212b9ed
 # ╠═ca99149e-df02-11ea-39a0-179e6a7d1344
-# ╠═fe41070e-df00-11ea-3be2-b72adee0837d
 # ╠═eb00be70-df00-11ea-0ce9-3b0a79a0f4a3
-# ╠═d8678810-defc-11ea-05b2-51373f754e61
+# ╟─d8678810-defc-11ea-05b2-51373f754e61
 # ╠═34a9ca60-df03-11ea-018c-399409d7842e
 # ╠═f94dece0-defc-11ea-0546-39a094bbd2b6
 # ╟─440c2010-df04-11ea-2550-6f679efd6b07
-# ╠═50cdc34e-df3e-11ea-0965-793860f72c45
-# ╟─e062be10-df40-11ea-1565-3d684f59321c
 # ╠═c3aa90e0-df04-11ea-0736-5176e619708a
+# ╟─116e9d42-812f-11eb-327c-e107809f9603
+# ╠═ba6bf300-8122-11eb-0a3e-2d30a150250c
+# ╠═d4547220-8121-11eb-1591-ebb8d7742fcc
+# ╠═5eebc400-8123-11eb-029e-8bd1bef4612e
+# ╠═f9dcadc0-812e-11eb-005f-d751ee820296
+# ╠═f13ed140-81bd-11eb-200f-9fc7aa549363
+# ╠═6eb00ba0-812b-11eb-06b8-9d782689846a
 # ╠═83941610-df41-11ea-0f0b-636bcab6c386
 # ╠═6cbb32f0-d665-11ea-3f24-41cbe1910b80
-# ╟─c4a86fb0-df42-11ea-2ee5-63a5bdd03376
+# ╠═c4a86fb0-df42-11ea-2ee5-63a5bdd03376
 # ╟─3cbc07a0-df43-11ea-0df8-5ba5311f2f43
+# ╟─c82134f0-8123-11eb-279a-2b03ca565783
 # ╟─a7b42e60-dfcb-11ea-2ae9-87311393dbef
 # ╠═dd573c40-dfc3-11ea-3ec8-7d0b939123c1
 # ╠═5b862210-dfc5-11ea-3958-d5f618a37108
@@ -368,5 +452,8 @@ end
 # ╠═bf615090-dfd7-11ea-12bb-11d922c37139
 # ╠═f0dd5060-dfd7-11ea-03d8-63269e0c3394
 # ╠═a4399020-dfd7-11ea-2e36-ddc90140e91d
-# ╠═0edbfe90-dfd8-11ea-038a-97c39cddb672
+# ╟─0edbfe90-dfd8-11ea-038a-97c39cddb672
+# ╟─a96a7e30-d639-11ea-08df-5d727910849c
+# ╟─8f8b3390-8130-11eb-38df-99e46c4051e0
+# ╟─e4e5a27e-8130-11eb-0c8a-91d509d7e897
 # ╠═42ab643e-dfd8-11ea-0ed7-392d94c7904e
