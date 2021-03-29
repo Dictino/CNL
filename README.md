@@ -7,7 +7,7 @@ Para ejecutar los ejemplos lo primero que necesitamos es instalar Julia, para el
 A continuación, desde el terminal de julia:
 
 ```julia
-julia>] add Pluto PlutoUI Plots OrdinaryDiffEq ModelingToolkit SymEngine LaTeXStrings
+julia>] add Pluto PlutoUI Plots OrdinaryDiffEq ModelingToolkit SymEngine LaTeXStrings ControlSystems
 
 ```
 
