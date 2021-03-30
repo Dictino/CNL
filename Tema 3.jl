@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.20
+# v0.12.21
 
 using Markdown
 using InteractiveUtils
@@ -422,7 +422,7 @@ $k_1\le \frac{f(x)}{x} \le k_2 \  \forall x\ne0$
 "
 
 # ╔═╡ b1a75e90-90ad-11eb-0f7d-1d2b98b9fce4
-f(x)=x^3-10/3*sin(x)
+f(x)=x*abs(x)-10/3*sin(x)
 
 # ╔═╡ a9dd2000-90df-11eb-0edb-e364fefafe32
 @bind k1 Slider(-10:0.01:10)
@@ -431,7 +431,7 @@ f(x)=x^3-10/3*sin(x)
 @bind k2 Slider(0:0.01:100)
 
 # ╔═╡ a134fad0-90e0-11eb-1145-df3b4d6da246
-@bind maximo Slider(1:0.01:10)
+@bind maximo Slider(1:0.01:100)
 
 # ╔═╡ 041d31e0-90b3-11eb-1d07-c3b6bb15e4ae
 begin
@@ -456,7 +456,7 @@ end
 md"Jugando un poco es fácil ver que es  $[-\frac{10}{3}, \infty)$
 Para verlo analíticamente habría que hacer
 
-$\frac{f(x)}{x}=x^2-\frac{10}{3}\frac{sin(x)}{x}$
+$\frac{f(x)}{x}=|x|-\frac{10}{3}\frac{sin(x)}{x}$
 
 Y ver que toma cualquier valor entre $-\frac{10}{3}$ (cuando $x \to 0$) e $\infty$ (cuando $x \to \infty$) 
 "
