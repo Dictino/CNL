@@ -78,7 +78,7 @@ end
 # ╔═╡ 203ea980-9090-11eb-25f8-8ff76ab5262a
 begin
 	K_max_conjeturas=10
-	@bind sliderAK Slider((-1:0.001:1)*K_max_conjeturas)
+	@bind sliderAK Slider((-1:0.001:1)*K_max_conjeturas,default=1.0)
 end
 
 # ╔═╡ c87918e0-dbe3-11ea-1d12-fb31f8ea5bfb
@@ -115,7 +115,7 @@ La recta ha de quedar a la izquierda
 K_maxA=100
 
 # ╔═╡ adee0ba0-d988-11ea-19c7-e324f1f86031
-@bind k2a Slider((0:0.001:1)*K_maxA)
+@bind k2a Slider((0:0.001:1)*K_maxA,default=1.0)
 
 # ╔═╡ 839b4c72-9092-11eb-2237-1dc284e3041e
 k2a
@@ -136,10 +136,10 @@ begin
 end
 
 # ╔═╡ fe58cf80-dbb8-11ea-1c6c-93fef94ed79c
-@bind k1b Slider((-1:0.001:0)*K_maxB1)
+@bind k1b Slider((-1:0.001:0)*K_maxB1,default=-1.0)
 
 # ╔═╡ d2de7080-dbb8-11ea-1d7e-11b40cd2ce8d
-@bind k2b Slider((0:0.001:1)*K_maxB2)
+@bind k2b Slider((0:0.001:1)*K_maxB2,default=1.0)
 
 # ╔═╡ d3077b80-9092-11eb-0f8b-85c6edde81f5
 (k1=k1b,k2=k2b)
@@ -252,7 +252,7 @@ md"Primero veamos que dicen las conjeturas"
 # ╔═╡ ab676b50-90a4-11eb-1632-f1f60fd49f07
 begin
 	K_max_conjeturas2=10
-	@bind sliderAK2 Slider((-1:0.001:1)*K_max_conjeturas2)
+	@bind sliderAK2 Slider((-1:0.001:1)*K_max_conjeturas2,default=1.0)
 end
 
 # ╔═╡ 81144e40-90a4-11eb-2941-f53c46a9300c
@@ -276,10 +276,10 @@ begin
 end
 
 # ╔═╡ 76a9f030-dbba-11ea-3326-95356d82a2c5
-@bind k1c Slider((0:0.001:1)*K_maxC1)
+@bind k1c Slider((0:0.001:1)*K_maxC1,default=1.0)
 
 # ╔═╡ 783969d0-dbba-11ea-10d0-b1cea6c3b727
-@bind k2c Slider((0:0.001:1)*K_maxC2)
+@bind k2c Slider((0:0.001:1)*K_maxC2,default=2.0)
 
 # ╔═╡ 5d374e70-9093-11eb-3126-bfa8080d6bc2
 (k1=k1c,k2=k2c)
@@ -305,10 +305,10 @@ begin
 end
 
 # ╔═╡ 8d0b4eee-dbba-11ea-2fad-5d7ed6f8035b
-@bind k1d Slider((-1:0.001:0)*K_maxD1)
+@bind k1d Slider((-1:0.001:0)*K_maxD1,default=-2.0 )
 
 # ╔═╡ 8f55db30-dbba-11ea-0370-ddadc3b11dfe
-@bind k2d Slider((-1:0.001:0)*K_maxD1)
+@bind k2d Slider((-1:0.001:0)*K_maxD1,default=-1.0)
 
 # ╔═╡ 3f2dfc70-9094-11eb-340c-592edc764cd1
 (k1d=k1d,k2d=k2d)
@@ -350,19 +350,19 @@ function popov(H,K,alpha)
 end
 
 # ╔═╡ fee20250-d8bb-11ea-299c-6d093b0edd20
-K_max=100
+K_max=1000
 
 # ╔═╡ cb075200-d8bb-11ea-234b-6d4b6fca9083
-@bind slider html"<input type=range min=0 max=1 step=0.01>"
+@bind K Slider(0.0:0.01:K_max,default=10.0)
 
 # ╔═╡ f2567110-dbe0-11ea-24a0-4d1a72151516
-@bind pendiente html"<input type=range min=0 max=90 step=1>"
+@bind pendiente Slider(0.0:0.1:90.0,default=45.0)
 
 # ╔═╡ f8ad6aa0-d8bb-11ea-0dea-85d5051066fe
-K=K_max*slider
+md"K=$(K)"
 
 # ╔═╡ e443a3e0-d8c0-11ea-362f-75314f8b2cbb
-alpha=tan(pendiente*pi/180)
+alpha=1/tan(pendiente*pi/180)
 
 # ╔═╡ dbcceee0-d985-11ea-2a3e-f9c3ec08cb75
 popov(H1,K,alpha)
@@ -425,13 +425,13 @@ $k_1\le \frac{f(x)}{x} \le k_2 \  \forall x\ne0$
 f(x)=x*abs(x)-10/3*sin(x)
 
 # ╔═╡ a9dd2000-90df-11eb-0edb-e364fefafe32
-@bind k1 Slider(-10:0.01:10)
+@bind k1 Slider(-10:0.01:10,default=-1.0)
 
 # ╔═╡ 3387bd60-90e0-11eb-1963-7dfc892de25c
-@bind k2 Slider(0:0.01:100)
+@bind k2 Slider(0:0.01:100,default=1.0)
 
 # ╔═╡ a134fad0-90e0-11eb-1145-df3b4d6da246
-@bind maximo Slider(1:0.01:100)
+@bind maximo Slider(1:0.01:100,default=1.0)
 
 # ╔═╡ 041d31e0-90b3-11eb-1d07-c3b6bb15e4ae
 begin
@@ -555,8 +555,8 @@ end
 # ╟─8e2736c0-d8bb-11ea-2fde-43a428dd9281
 # ╠═497f9250-d8bc-11ea-194d-77979b94814d
 # ╠═fee20250-d8bb-11ea-299c-6d093b0edd20
-# ╟─cb075200-d8bb-11ea-234b-6d4b6fca9083
-# ╟─f2567110-dbe0-11ea-24a0-4d1a72151516
+# ╠═cb075200-d8bb-11ea-234b-6d4b6fca9083
+# ╠═f2567110-dbe0-11ea-24a0-4d1a72151516
 # ╟─f8ad6aa0-d8bb-11ea-0dea-85d5051066fe
 # ╟─e443a3e0-d8c0-11ea-362f-75314f8b2cbb
 # ╠═dbcceee0-d985-11ea-2a3e-f9c3ec08cb75
