@@ -93,7 +93,7 @@ Veamos qué dicen los criterios *de verdad* y no las conjeturas
 "
 
 # ╔═╡ 66f0b770-d8c5-11ea-0ee3-7ba9b6dfb585
-md"""# Criterio del circulo
+md"""# Criterio del círculo
 ## Antes de empezar comprueba que:
 + Como es una funcion de transferencia ya es contolable/observable (OK)
 + No hay integradores ni realimentación directa $$d=0$$
@@ -364,8 +364,11 @@ md"K=$(K)"
 # ╔═╡ e443a3e0-d8c0-11ea-362f-75314f8b2cbb
 alpha=1/tan(pendiente*pi/180)
 
+# ╔═╡ b7044bc0-9880-11eb-31b6-b1578086897a
+H3(s)=H1(s)/s
+
 # ╔═╡ dbcceee0-d985-11ea-2a3e-f9c3ec08cb75
-popov(H1,K,alpha)
+popov(H3,K,alpha)
 
 # ╔═╡ 367c9ac0-90dd-11eb-011b-0f7c4fca2c89
 md"Es decir  $[0, \infty)$"
@@ -464,8 +467,7 @@ Y ver que toma cualquier valor entre $-\frac{10}{3}$ (cuando $x \to 0$) e $\inft
 # ╔═╡ af179aae-90a7-11eb-2a7b-1b96a28c8ebc
 function control(y)
 	r=0
-	e=y-r
-    u=-f(e)
+    u=-f(y)-r
 end
 
 # ╔═╡ 21c1cfa0-90a7-11eb-3c54-23fa9b677080
@@ -495,7 +497,7 @@ let
 	
 	plot(ts,y,xaxis="t",yaxis="y(t)",label="y(t)")
 	#referencia
-	fig1=plot!(ts,0.0*ts, linestyle=[:dot], linewidth=2, label="referencia") 
+	fig1=plot!(ts,0.0*ts, linestyle=:dot, linewidth=2, label="referencia") 
 		
 	
 	#Señal de control, u no se guarda, hay que recalcularlo
@@ -559,6 +561,7 @@ end
 # ╠═f2567110-dbe0-11ea-24a0-4d1a72151516
 # ╟─f8ad6aa0-d8bb-11ea-0dea-85d5051066fe
 # ╟─e443a3e0-d8c0-11ea-362f-75314f8b2cbb
+# ╠═b7044bc0-9880-11eb-31b6-b1578086897a
 # ╠═dbcceee0-d985-11ea-2a3e-f9c3ec08cb75
 # ╟─367c9ac0-90dd-11eb-011b-0f7c4fca2c89
 # ╟─3b303230-90a5-11eb-148b-d9c93a8c3772
