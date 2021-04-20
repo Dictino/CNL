@@ -7,7 +7,7 @@ Para ejecutar los ejemplos lo primero que necesitamos es instalar Julia, para el
 A continuación, desde el terminal de julia:
 
 ```julia
-julia>] add Pluto PlutoUI Plots OrdinaryDiffEq ModelingToolkit SymEngine LaTeXStrings ControlSystems
+julia>] add Pluto PlutoUI Plots OrdinaryDiffEq ModelingToolkit SymEngine LaTeXStrings ControlSystems Symbolics
 
 ```
 
@@ -40,7 +40,8 @@ https://github.com/Dictino/CNL/blob/main/Tema%206.jl
 
 Si queréis probarlo **sin instalar nada** en vuestro ordenador (no es la opción recomendada, pero es muy útil si queréis verlo en una tableta, teléfono o en un ordenador en el que no queréis instalar software)
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Dictino/pluto-on-binder/381cdf1?urlpath=pluto)
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Dictino/pluto-on-binder/2a61735?urlpath=pluto)
 
 Ojo que binder **no es persistente**, si hacéis un cambio y queréis guardarlo no uséis el botón de guardar sino el de exportar:
 
