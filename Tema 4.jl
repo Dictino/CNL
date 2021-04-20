@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.20
+# v0.12.21
 
 using Markdown
 using InteractiveUtils
@@ -20,12 +20,11 @@ using OrdinaryDiffEq
 using Plots
 
 # ╔═╡ be8523c0-0239-11eb-0439-592e370c5618
-#using Pkg
-#Pkg.add("LaTeXStrings")
-using LaTeXStrings
+using LaTeXStrings #rotulos de las figuras bonitos
 
 # ╔═╡ 5fe018a0-023b-11eb-1e69-d59b562edc9b
-using SymEngine
+using Symbolics
+#alternativamente también se puede usar SymEngine
 
 # ╔═╡ 24c4e010-0255-11eb-00cc-6b84a43550e1
 using LinearAlgebra
@@ -56,15 +55,37 @@ La idea es derivar hasta que sale u
 # ╔═╡ 6831eb02-023b-11eb-0842-fbe8f8eb8937
 md"Vamos a usar cálculo simbólico"
 
+# ╔═╡ 1476277e-a216-11eb-141c-fb0e6c9b932e
+diff(f,variable)=expand_derivatives(Symbolics.derivative(f,variable))
+
+# ╔═╡ 74befac0-a218-11eb-2ab4-ad0557f4f5ff
+subs(expr,dict)=substitute(expr, dict)
+
+# ╔═╡ 82dd7b40-a218-11eb-037f-c50647e787de
+expand(x)=simplify(x;polynorm=true)
+
+# ╔═╡ 13bcbb30-a219-11eb-16d1-81b00e78dc73
+solve_for(ecuacion,variable)=Symbolics.solve_for(ecuacion, variable)
+
+# ╔═╡ b15fed52-a21c-11eb-031d-d31eb7871814
+jacobian(f,x)=Symbolics.jacobian(f,x)
+
 # ╔═╡ 3ff84c30-0248-11eb-33ba-f99304ee8672
-D,x1,x2,t,u,J, M, g, L=symbols("D,x1,x2,t,u,J, M, g, L")
+begin
+	D=x1=x2=t=u=J=M=g=L=0  #eso es cosa de pluto y las macros
+	@variables D x1 x2 t u J M g L  # =symbols("D,x1,x2,t,u,J, M, g, L")
+end
 
 # ╔═╡ 7accfd80-023c-11eb-318d-571f57cd5d48
 begin
     dx1=x2
     dx2=-M*g*L/J*sin(x1)+u/J
-	dx=[dx1 dx2]
+	dx=[dx1;dx2]
+	nothing
 end
+
+# ╔═╡ 667e2c90-a215-11eb-02b2-07852ab51e6f
+dx1
 
 # ╔═╡ c37e74f2-023c-11eb-3d52-ab5ef1b12d64
 y=x1 #en general puede ser una función  complicada de x1 y x2...
@@ -114,28 +135,22 @@ $$y^{(\gamma)}=v$$
 """
 
 # ╔═╡ 32f37f70-0250-11eb-1d4a-c33b7655d0fa
-v=symbols("v")
+begin
+	v=0
+	@variables v
+end
 
-# ╔═╡ 08ab60a0-0a2c-11eb-01ea-d931fac03d1a
-md"observamos que la derivaa es algo*u + otracosa = v"
+# ╔═╡ 36b289f0-a217-11eb-1e44-bf78273d20a7
+ecuacion=der~v  #esto es la ecuación, se escribe con ALT+127
 
-# ╔═╡ d2398ab0-0a2b-11eb-3688-f7a8059c50de
-algo=coeff(der, u, Basic(1))
-
-# ╔═╡ f0b3f890-0a2b-11eb-181e-7b4e1dbc092e
-otracosa=der-algo*u
-
-# ╔═╡ 3c29c020-0a2c-11eb-06c2-4138ff617221
-uc=(v-otracosa)/algo
-
-# ╔═╡ 0c2f2e70-0250-11eb-2443-79d9a4b70170
-uc2=expand(uc)
+# ╔═╡ da9b1972-a216-11eb-1106-793e544c2e8a
+uc=solve_for(ecuacion, u)
 
 # ╔═╡ 561e07e2-0250-11eb-1380-4b5dfa861cd6
 md"vamos a ver que lo hemos hecho bien"
 
 # ╔═╡ 55c03070-0250-11eb-07aa-db17023d2b8f
-expand(subs(der,u=>uc2))  #si no sale tal vez ayude "expand" para simplificar...
+expand(subs(der,u=>uc))  #si no sale tal vez ayude "expand" para simplificar...
 
 # ╔═╡ de497f50-0250-11eb-028e-ffe56cf1ba45
 md"La idea es controlar un nuevo sistema:
@@ -154,7 +169,8 @@ z1=y
 
 # ╔═╡ 75042f80-0959-11eb-0a08-eb14553eb3b0
 begin #Para escrbir menos
-	x=[x1 x2]
+	x=[x1;x2]
+	string(x)
 end
 
 # ╔═╡ 75137750-023e-11eb-2a2a-33728fec7368
@@ -187,21 +203,13 @@ $$\begin{pmatrix}
 """
 
 # ╔═╡ 6ea86650-023e-11eb-010f-7753ce153553
-z=[z1,z2]
+z=[z1;z2]
 
-# ╔═╡ d0636c90-0253-11eb-36ec-e72cc764851a
-function jacobiano(z,x)
-	N=length(z)
-	M=length(x)
-	Jac=zeros(N,M)
-	for i=1:N, j=1:M
-		Jac[i,j]=diff(z[i],x[j])
-	end
-	return Jac
+# ╔═╡ d259ec0e-a21a-11eb-2c99-818e7ee1c4fc
+begin
+	jac=jacobian(z,x)
+	string(jac)
 end
-
-# ╔═╡ 61d1e9a0-0253-11eb-3ca4-2b15005b1749
-jac=jacobiano(z,x)
 
 # ╔═╡ 4ab11600-0254-11eb-21f0-99d614d334c9
 det(jac)
@@ -234,7 +242,8 @@ $$(1-p_1)(1-p_2)...(1-p_{\gamma})$$
 begin
 	p1=-1
 	p2=-2
-	s=symbols("s")
+	s=0
+	@variables s
 	expand((s-p1)*(s-p2))
 end
 
@@ -245,12 +254,9 @@ md"Entonces $d_0$ y $d_1$ son... 2 y 3 ;)"
 md"Ahora lo ponemos todo junto"
 
 # ╔═╡ 2814f040-0267-11eb-3f4d-2933c0c3528a
-function control_1_estabilizacion(x1,x2,t)
+function control_1_estabilizacion(x,p,t)
 	x1,x2=x
-	J=1
-	M=1
-	g=1
-	L=1  
+	M,g,L,J=p  
 	d0=2
 	d1=3
 	
@@ -261,17 +267,32 @@ function control_1_estabilizacion(x1,x2,t)
 	return u
 end	
 
+# ╔═╡ 506a20d0-026f-11eb-2bde-f94724bd27f3
+begin
+	#control_1(x,p,t)=0
+	referencia_1(t)=0
+	
+	control_1=control_1_estabilizacion
+		
+	#control_1=control_1_seguimiento
+	#referencia_1=referencia_1_a
+end
+
+# ╔═╡ 85c0d350-022e-11eb-0873-c118ffde014c
+function derivadas_ejemplo1(x,p,t)
+	x1,x2=x
+	M,g,L,J=p
+	u=control_1(x,p,t)#calculamos el control
+	dx1=x2
+    dx2=-M*g*L/J*sin(x1)+u/J
+	dx=[dx1 dx2] #no hace falta return dx
+end
+
 # ╔═╡ 3b125190-0269-11eb-2473-33cbb7451779
 md"Si queremos podemos sustituir todo **ojo a veces no compensa** (por que queda muy largo y difícil de depurar) en este caso si"
 
 # ╔═╡ 639dce00-0269-11eb-191e-d16a91f3bcf9
-begin
-	u_sustituido=subs(uc2,v=>-2*y-3*dy)
-	u_sustituido=subs(u_sustituido,L=>1)
-	u_sustituido=subs(u_sustituido,M=>1)
-	u_sustituido=subs(u_sustituido,g=>1)
-	u_sustituido=subs(u_sustituido,J=>1)
-end
+u_sustituido=subs(uc,[v=>-2*y-3*dy,L=>1,M=>1,g=>1,J=>1])
 
 # ╔═╡ e0b21ca0-0a2c-11eb-0e50-efa6c355e7c5
 md"Pero **ojo** se pierde la interpretación física de lo que hace el control"
@@ -304,14 +325,11 @@ function referencia_1_a(t)
 end
 
 # ╔═╡ a0e6f960-026b-11eb-23c9-410e6d61c4a1
-function control_1_seguimiento(x,t)
+function control_1_seguimiento(x,p,t)
 	x1,x2=x
 	yr,dyr,ddyr=referencia_1_a(t)
 	
-	J=1
-	M=1
-	g=1
-	L=1 
+	M,g,L,J=p
 	
 	d0=2
 	d1=3
@@ -327,30 +345,9 @@ function control_1_seguimiento(x,t)
 	return u
 end	
 
-# ╔═╡ 506a20d0-026f-11eb-2bde-f94724bd27f3
-begin
-	#control_1(x,t)=0
-	#referencia_1(t)=0
-	
-	control_1=control_1_estabilizacion
-		
-	control_1=control_1_seguimiento
-	referencia_1=referencia_1_a
-end
-
-# ╔═╡ 85c0d350-022e-11eb-0873-c118ffde014c
-function derivadas_ejemplo1(x,p,t)
-	J,M,g,L=p #extraemos los parámetros
-	x1,x2=x #y las variables
-	u=control_1(x,t)#calculamos el control
-	dx1=x2
-    dx2=-M*g*L/J*sin(x1)+u/J
-	dx=[dx1 dx2] #no hace falta return dx
-end
-
 # ╔═╡ 922bccde-022d-11eb-17f2-270aae61f923
 md"""# Dinámica cero
-El ejemplo anteior funciona muy bien por dos motivos:
+El ejemplo anterior funciona muy bien por dos motivos:
 1) Al derivar obtengo tantos estados como tenía antes (grado relativo máximo)
 2) El cambio de variabes de los estados a las derivadas de y era invertible (difeomorfismo)
 Eso significa que controlar $y$ y sus derivadas $y, \dot y ... y^{(\gamma)}$ es lo mismo que controlar $x_1...x_\gamma$.
@@ -375,18 +372,19 @@ md"Ya sabemos hacerlo, vamos al grano"
 
 # ╔═╡ 54523da0-0958-11eb-2730-cbef0823f684
 begin
-	a,x3=symbols("a,x3") #OJO los otros los he definido ya antes
+	a=x3=0
+	@variables a x3
 	#copia de las ecuaciones poniendo Bs para no pisar variables anteriores
 	dxb1=-x1 + exp(2x2)*u
     dxb2=2x1*x2 +sin(x2) + u/2
 	dxb3=2x2	
 	dxb=[dxb1 dxb2 dxb3]
 	#estados y salida
-	xb=[x1 x2 x3]
+	xb=[x1;x2;x3]
 	yb=x3
 end
 
-# ╔═╡ a533e720-0230-11eb-0403-b13fb807bc94
+# ╔═╡ 2a98e6e0-a227-11eb-026a-bb5831f344bb
 let
 	x0 = [0.1 0.1]
 	parametros=[1 1 1 1] # una g un poco rara ¿no?
@@ -403,11 +401,9 @@ let
 	fig2=plot(sol, xaxis="t",yaxis=L"x(t)", label=:none)
 	#fig2=plot(sol,vars=(0,1), xaxis=L"t",yaxis=L"x(t)",label=L"x_1")
 	#fig2=plot!(sol,vars=(0,2), ,label=L"x_2")
-	
-	#para esto es el LaTeXStrings
 	    
 	#Señal de control, u no se guarda, hay que recalcularlo
-	fig3=plot(sol, vars=((t,x1,x2)->(t,control_1([x1,x2],t)),0, 1, 2),
+	fig3=plot(sol, vars=((t,x1,x2)->(t,control_1([x1,x2],parametros,t)),0, 1, 2),
 		    xaxis=L"t",yaxis=L"u(t)",legend=false)
 	l = @layout [a ; b ; c]
 	plot(fig1,fig2,fig3, layout=l)
@@ -426,45 +422,17 @@ El jacobiano es obvio que es singular (2x3)
 """
 
 # ╔═╡ ab5f1de0-0960-11eb-2cf6-414898fd1323
-jacobiano([yb dyb],[x1 x2 x3])
+string(jacobian([yb;dyb],xb))
 
 # ╔═╡ c7d09f80-0a28-11eb-3548-11dbb05bbbbb
 md"""Vamos a seguir como si nada a ver que pasa...
-"""
-
-# ╔═╡ c8a04540-095c-11eb-0b16-0bbf6ae0b6eb
-md"""# ¡Funciona!
-Pero si cambiamos a=1 por a=-1 ¿Qué pasaría?"""
-
-# ╔═╡ 062714d0-0a2e-11eb-073f-6bd47b020c54
-	constante_a=1
-
-# ╔═╡ 667f8b70-095f-11eb-08a8-0f49a920e3cb
-@bind tf Slider(10:100)
-
-# ╔═╡ 1f8be93e-0962-11eb-14f4-73a59ba80a72
-md""" Que raro... para ver que ha pasado veamos la dinámica cero, recordemos las ecuaciones:
-
-$\dot x_1=-ax_1 + e^{2x_2}u$
-$\dot x_2=2x_1x_2 +sin(x_2) + \frac{u}{2}$
-$\dot x_3=2x_2$
-$y=x_3$
-
-Si la salida $y(t)=0$ cero entonces:
-
-$y=x_3=0 \to \dot x_3=0=2x_2 \to x_2=0 \to \dot x_2=0$
-$0=0 +sin(0) + \frac{u}{2} \to u=0$
-
-$\dot x_1=-ax_1 + e^{0}0$
-
-Esto es estable si a es positivo pero *inestable* si a es negativo, eso podría explica por qué x_1 se aleja del origen (dinámica cero inestable)
 """
 
 # ╔═╡ 706b0500-0a2d-11eb-023e-1de0809fe6cf
 referencia_2(t)=0*referencia_1_a(t)
 
 # ╔═╡ c8abde00-095c-11eb-237c-a9fd2bd95b8a
-function control_2(x,t)
+function control_2(x,p,t)
 	x1,x2,x3=x
 	
 	yr,dyr,ddyr=referencia_2(t) #defindia más abajo
@@ -488,12 +456,22 @@ end
 function derivadas_ejemplo2(x,p,t)
 	x1,x2,x3=x
 	a=p[1]
-	u=control_2(x,t);#calculamos el control
+	u=control_2(x,p,t);#calculamos el control
 	dx1=-a*x1 + exp(2x2)*u
     dx2=2x1*x2 +sin(x2) + u/2
 	dx3=2x2
 	dx=[dx1 dx2 dx3]
 end
+
+# ╔═╡ c8a04540-095c-11eb-0b16-0bbf6ae0b6eb
+md"""# ¡Funciona!
+Pero si cambiamos a=1 por a=-1 ¿Qué pasaría?"""
+
+# ╔═╡ 062714d0-0a2e-11eb-073f-6bd47b020c54
+	constante_a=1
+
+# ╔═╡ 667f8b70-095f-11eb-08a8-0f49a920e3cb
+@bind tf Slider(10:100)
 
 # ╔═╡ b117ab50-04cc-11eb-1580-fdafb3c3213b
 let
@@ -513,11 +491,29 @@ let
 	
 
 	#Señal de control, u no se guarda, hay que recalcularlo
-	fig3=plot(sol, vars=((t,x1,x2, x3)->(t,control_2([x1,x2,x3],t)),0, 1, 2, 3),
+	fig3=plot(sol, vars=((t,x1,x2, x3)->(t,control_2([x1,x2,x3],parametros,t)),0, 1, 2, 3),
 		    xaxis=L"t",yaxis=L"u(t)",legend=false)
 	l = @layout [a ; b ; c]
 	plot(fig1,fig2,fig3, layout=l)
 end
+
+# ╔═╡ 1f8be93e-0962-11eb-14f4-73a59ba80a72
+md""" Que raro... para ver que ha pasado veamos la dinámica cero, recordemos las ecuaciones:
+
+$\dot x_1=-ax_1 + e^{2x_2}u$
+$\dot x_2=2x_1x_2 +sin(x_2) + \frac{u}{2}$
+$\dot x_3=2x_2$
+$y=x_3$
+
+Si la salida $y(t)=0$ cero entonces:
+
+$y=x_3=0 \to \dot x_3=0=2x_2 \to x_2=0 \to \dot x_2=0$
+$0=0 +sin(0) + \frac{u}{2} \to u=0$
+
+$\dot x_1=-ax_1 + e^{0}0$
+
+Esto es estable si a es positivo pero *inestable* si a es negativo, eso podría explica por qué x_1 se aleja del origen (dinámica cero inestable)
+"""
 
 # ╔═╡ 41656a80-0a7c-11eb-1070-db649ce73728
 md"""Para comprobar la teoría ponemos la referenica a cero, cuando la salida se haga cero lo que queda es "la dimámica cero" y la teoría nos dice:
@@ -538,12 +534,18 @@ md"""Para comprobar la teoría ponemos la referenica a cero, cuando la salida se
 # ╠═c803fe10-0231-11eb-1f84-dbe43fd97eb4
 # ╠═be8523c0-0239-11eb-0439-592e370c5618
 # ╟─85c03440-0274-11eb-3c81-514259334750
-# ╠═a533e720-0230-11eb-0403-b13fb807bc94
-# ╠═e3e9d0a0-022c-11eb-04ba-97dcb9ba908a
+# ╟─2a98e6e0-a227-11eb-026a-bb5831f344bb
+# ╟─e3e9d0a0-022c-11eb-04ba-97dcb9ba908a
 # ╠═6831eb02-023b-11eb-0842-fbe8f8eb8937
 # ╠═5fe018a0-023b-11eb-1e69-d59b562edc9b
+# ╠═1476277e-a216-11eb-141c-fb0e6c9b932e
+# ╠═74befac0-a218-11eb-2ab4-ad0557f4f5ff
+# ╠═82dd7b40-a218-11eb-037f-c50647e787de
+# ╠═13bcbb30-a219-11eb-16d1-81b00e78dc73
+# ╠═b15fed52-a21c-11eb-031d-d31eb7871814
 # ╠═3ff84c30-0248-11eb-33ba-f99304ee8672
 # ╠═7accfd80-023c-11eb-318d-571f57cd5d48
+# ╠═667e2c90-a215-11eb-02b2-07852ab51e6f
 # ╠═c37e74f2-023c-11eb-3d52-ab5ef1b12d64
 # ╠═d792d670-023c-11eb-13e2-d72bc2ce9857
 # ╠═f08ba8f0-023c-11eb-2903-5bd99458a0b0
@@ -554,12 +556,9 @@ md"""Para comprobar la teoría ponemos la referenica a cero, cuando la salida se
 # ╠═b29a1880-024e-11eb-0d4e-6f2ef620a33d
 # ╟─9ecc5ff0-022d-11eb-3715-51831818d04f
 # ╠═32f37f70-0250-11eb-1d4a-c33b7655d0fa
-# ╠═08ab60a0-0a2c-11eb-01ea-d931fac03d1a
-# ╠═d2398ab0-0a2b-11eb-3688-f7a8059c50de
-# ╠═f0b3f890-0a2b-11eb-181e-7b4e1dbc092e
-# ╠═3c29c020-0a2c-11eb-06c2-4138ff617221
-# ╠═0c2f2e70-0250-11eb-2443-79d9a4b70170
-# ╠═561e07e2-0250-11eb-1380-4b5dfa861cd6
+# ╠═36b289f0-a217-11eb-1e44-bf78273d20a7
+# ╠═da9b1972-a216-11eb-1106-793e544c2e8a
+# ╟─561e07e2-0250-11eb-1380-4b5dfa861cd6
 # ╠═55c03070-0250-11eb-07aa-db17023d2b8f
 # ╟─de497f50-0250-11eb-028e-ffe56cf1ba45
 # ╠═a88bc90e-024e-11eb-33ae-6bea88327d9b
@@ -569,13 +568,12 @@ md"""Para comprobar la teoría ponemos la referenica a cero, cuando la salida se
 # ╠═207897c2-0252-11eb-0d9c-79192f7f4466
 # ╟─72e4e740-022d-11eb-3a63-31023b9d464f
 # ╠═6ea86650-023e-11eb-010f-7753ce153553
-# ╠═d0636c90-0253-11eb-36ec-e72cc764851a
-# ╠═61d1e9a0-0253-11eb-3ca4-2b15005b1749
+# ╠═d259ec0e-a21a-11eb-2c99-818e7ee1c4fc
 # ╠═24c4e010-0255-11eb-00cc-6b84a43550e1
 # ╠═4ab11600-0254-11eb-21f0-99d614d334c9
 # ╟─9ec274e0-022d-11eb-085a-7907b8f1eb93
 # ╠═aed8d350-0265-11eb-1223-1dd0651632b6
-# ╠═0d736c40-0266-11eb-3433-ad75c1617314
+# ╟─0d736c40-0266-11eb-3433-ad75c1617314
 # ╟─f54ff5b2-0266-11eb-1df3-49f3c95729c7
 # ╠═2814f040-0267-11eb-3f4d-2933c0c3528a
 # ╟─3b125190-0269-11eb-2473-33cbb7451779
@@ -595,11 +593,11 @@ md"""Para comprobar la teoría ponemos la referenica a cero, cuando la salida se
 # ╠═ab5f1de0-0960-11eb-2cf6-414898fd1323
 # ╟─c7d09f80-0a28-11eb-3548-11dbb05bbbbb
 # ╠═c8abde00-095c-11eb-237c-a9fd2bd95b8a
+# ╠═706b0500-0a2d-11eb-023e-1de0809fe6cf
 # ╟─c8a04540-095c-11eb-0b16-0bbf6ae0b6eb
 # ╠═062714d0-0a2e-11eb-073f-6bd47b020c54
 # ╠═c900ad60-095f-11eb-3d18-9f187abdb9b3
-# ╟─667f8b70-095f-11eb-08a8-0f49a920e3cb
+# ╠═667f8b70-095f-11eb-08a8-0f49a920e3cb
 # ╠═b117ab50-04cc-11eb-1580-fdafb3c3213b
 # ╟─1f8be93e-0962-11eb-14f4-73a59ba80a72
-# ╠═706b0500-0a2d-11eb-023e-1de0809fe6cf
 # ╟─41656a80-0a7c-11eb-1070-db649ce73728
