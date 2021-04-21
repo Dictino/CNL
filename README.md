@@ -41,7 +41,7 @@ https://github.com/Dictino/CNL/blob/main/Tema%206.jl
 Si queréis probarlo **sin instalar nada** en vuestro ordenador (no es la opción recomendada, pero es muy útil si queréis verlo en una tableta, teléfono o en un ordenador en el que no queréis instalar software)
 
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Dictino/pluto-on-binder/2a61735?urlpath=pluto)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Dictino/pluto-on-binder/83dab44?urlpath=pluto)
 
 Ojo que binder **no es persistente**, si hacéis un cambio y queréis guardarlo no uséis el botón de guardar sino el de exportar:
 
