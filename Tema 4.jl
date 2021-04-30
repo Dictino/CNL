@@ -24,9 +24,26 @@ using LaTeXStrings #rotulos de las figuras bonitos
 
 # ╔═╡ 5fe018a0-023b-11eb-1e69-d59b562edc9b
 using Symbolics
-#alternativamente también se puede usar SymEngine
+#alternativamente también se puede usar SymEngine pero hay que definir el jacobiano a mano
 
-# ╔═╡ 24c4e010-0255-11eb-00cc-6b84a43550e1
+# ╔═╡ 1c0442a0-a993-11eb-1b2d-55eb8b868dc7
+#algunas definiciones útiles
+begin
+	using Latexify  # si no lo tenéis hay que instalarlo
+    Base.show(io::IO, ::MIME"text/html", x::Symbolics.Num) = print(io, latexify(x))
+    Base.show(io::IO, ::MIME"text/html", x::Symbolics.Symbolic) = print(io, latexify(x))
+    Base.show(io::IO, ::MIME"text/html", x::Symbolics.Vector{Equation}) = print(io, latexify(x))
+    Base.show(io::IO, ::MIME"text/html", x::Symbolics.AbstractArray{Num}) = print(io, latexify(x))
+	
+	diff(f,variable) = expand_derivatives(Symbolics.derivative(f,variable))
+	subs(expr,dict) = substitute(expr, dict)
+	expand(x) = simplify(x;polynorm=true) #En ciertas versiones es expand = true
+	solve_for(ecuacion,variable) = Symbolics.solve_for(ecuacion, variable)
+	jacobian(f,x) = Symbolics.jacobian(f,x)
+end
+
+
+# ╔═╡ 183a6460-a9ca-11eb-340e-872e08f29a9e
 using LinearAlgebra
 
 # ╔═╡ c900ad60-095f-11eb-3d18-9f187abdb9b3
@@ -49,51 +66,34 @@ md"## Simulamos y pintamos"
 
 # ╔═╡ e3e9d0a0-022c-11eb-04ba-97dcb9ba908a
 md"""# Grado relativo 
-La idea es derivar hasta que sale u
+La idea es "derivar hasta que sale u" 
 """
 
 # ╔═╡ 6831eb02-023b-11eb-0842-fbe8f8eb8937
 md"Vamos a usar cálculo simbólico"
 
-# ╔═╡ 1476277e-a216-11eb-141c-fb0e6c9b932e
-diff(f,variable)=expand_derivatives(Symbolics.derivative(f,variable))
-
-# ╔═╡ 74befac0-a218-11eb-2ab4-ad0557f4f5ff
-subs(expr,dict)=substitute(expr, dict)
-
-# ╔═╡ 82dd7b40-a218-11eb-037f-c50647e787de
-expand(x)=simplify(x;polynorm=true)
-
-# ╔═╡ 13bcbb30-a219-11eb-16d1-81b00e78dc73
-solve_for(ecuacion,variable)=Symbolics.solve_for(ecuacion, variable)
-
-# ╔═╡ b15fed52-a21c-11eb-031d-d31eb7871814
-jacobian(f,x)=Symbolics.jacobian(f,x)
-
 # ╔═╡ 3ff84c30-0248-11eb-33ba-f99304ee8672
 begin
-	D=x1=x2=t=u=J=M=g=L=0  #eso es cosa de pluto y las macros
+	D=x1=x2=t=u=J=M=g=L=0  #eso es cosa de pluto y las macros (si no no es necesario)
 	@variables D x1 x2 t u J M g L  # =symbols("D,x1,x2,t,u,J, M, g, L")
 end
 
-# ╔═╡ 7accfd80-023c-11eb-318d-571f57cd5d48
+# ╔═╡ 6d535e50-a99a-11eb-08c1-4d98301e53b3
 begin
-    dx1=x2
-    dx2=-M*g*L/J*sin(x1)+u/J
+	#escribir las ecuaciones simbólicas
+	x=[x1;x2]
+	dx1=x2
+	dx2=-M*g*L/J*sin(x1)+u/J
 	dx=[dx1;dx2]
-	nothing
 end
 
-# ╔═╡ 667e2c90-a215-11eb-02b2-07852ab51e6f
-dx1
+# ╔═╡ 5525d1a0-a9c7-11eb-1de0-1700c9c20460
+y=x1
 
-# ╔═╡ c37e74f2-023c-11eb-3d52-ab5ef1b12d64
-y=x1 #en general puede ser una función  complicada de x1 y x2...
+# ╔═╡ 65893910-a9c7-11eb-2f9f-ebadf375cdbc
+dy=diff(y,x1)*dx1+diff(y,x2)*dx2
 
-# ╔═╡ d792d670-023c-11eb-13e2-d72bc2ce9857
-dy=diff(y,x1)*dx1+diff(y,x2)*dx2 #atajo es lo mismo que dx1
-
-# ╔═╡ f08ba8f0-023c-11eb-2903-5bd99458a0b0
+# ╔═╡ a0571620-a9c7-11eb-070f-297fa9e406b2
 ddy=diff(dy,x1)*dx1+diff(dy,x2)*dx2
 
 # ╔═╡ 39ce8af0-023d-11eb-3178-857433b369ae
@@ -122,11 +122,9 @@ begin
 	end
 end
 
-# ╔═╡ 82580d60-0250-11eb-000c-d3b1c91e211f
-grado=2  #ajustar hasta que salga u
-
-# ╔═╡ b29a1880-024e-11eb-0d4e-6f2ef620a33d
-der=derivada(y,[x1 x2],[dx1 dx2],grado)
+# ╔═╡ 697f24d0-a99a-11eb-26e6-a749fb04cb0f
+#usar la función
+der=derivada(y,x,dx,2)
 
 # ╔═╡ 9ecc5ff0-022d-11eb-3715-51831818d04f
 md"""# Cambio de variables
@@ -134,23 +132,25 @@ vamos a cambiar u por v para ello despejamos de
 $$y^{(\gamma)}=v$$
 """
 
-# ╔═╡ 32f37f70-0250-11eb-1d4a-c33b7655d0fa
+# ╔═╡ 65ad8360-a99a-11eb-3764-aded1015107e
 begin
+	#definir v
 	v=0
 	@variables v
 end
 
-# ╔═╡ 36b289f0-a217-11eb-1e44-bf78273d20a7
-ecuacion=der~v  #esto es la ecuación, se escribe con ALT+127
+# ╔═╡ 4b753d20-a9c8-11eb-320a-d58ec5e3c431
+ecuación=der~v
 
-# ╔═╡ da9b1972-a216-11eb-1106-793e544c2e8a
-uc=solve_for(ecuacion, u)
+# ╔═╡ 6e31c180-a9c8-11eb-3893-f55415fa4fad
+uc=solve_for(ecuación,u)
 
 # ╔═╡ 561e07e2-0250-11eb-1380-4b5dfa861cd6
 md"vamos a ver que lo hemos hecho bien"
 
-# ╔═╡ 55c03070-0250-11eb-07aa-db17023d2b8f
-expand(subs(der,u=>uc))  #si no sale tal vez ayude "expand" para simplificar...
+# ╔═╡ 64db3f40-a99a-11eb-01df-d3ca4846ca33
+#sustituir u en la derivada y ver que sale v
+expand(subs(der,u=>uc))
 
 # ╔═╡ de497f50-0250-11eb-028e-ffe56cf1ba45
 md"La idea es controlar un nuevo sistema:
@@ -164,29 +164,24 @@ $$\dot z_{\gamma}=v$$
 $$y=z_1$$
 "
 
-# ╔═╡ a88bc90e-024e-11eb-33ae-6bea88327d9b
+# ╔═╡ c2f97c40-a99a-11eb-30e7-359effec0a1d
+#define z1 y su derivada z2
 z1=y
 
-# ╔═╡ 75042f80-0959-11eb-0a08-eb14553eb3b0
-begin #Para escrbir menos
-	x=[x1;x2]
-	string(x)
-end
-
-# ╔═╡ 75137750-023e-11eb-2a2a-33728fec7368
-z2=derivada(y,x,dx,1) #en general n-1 veces para que su derivada sea v
+# ╔═╡ 85e1f1f0-a9c9-11eb-2a97-1944f7fcb34b
+z2=derivada(y,x,dx)
 
 # ╔═╡ 0db8c9c0-0252-11eb-199c-2d69997c6769
 md"veamos que lo hemos hecho bien y la derivada es la corecta"
 
-# ╔═╡ 207897c2-0252-11eb-0d9c-79192f7f4466
-expand(derivada(z2,x,dx) - der) #debería de ser cero 
+# ╔═╡ dd56c0c2-a99a-11eb-0c87-8f8e2c6321a8
+expand(subs(derivada(z2,x,dx), u=>uc))
 
 # ╔═╡ 72e4e740-022d-11eb-3a63-31023b9d464f
 md"""# Difeomorfismo
 A partir de ahora controlaremos las **z** pero *OJO* que nuestro objetivo son las **x** 
 
-¿Al controlar z se controla x?
+¿Al controlar z **se controla x**?
 
 -Si se puede despejar x(x) entonces si-->difeomorfismo (al menos local)
 
@@ -202,16 +197,14 @@ $$\begin{pmatrix}
 
 """
 
-# ╔═╡ 6ea86650-023e-11eb-010f-7753ce153553
-z=[z1;z2]
+# ╔═╡ f1e0ee80-a99a-11eb-0c06-85f8d7086aac
+#definir el vector z, calcular el jacobiano y derivar
+z=[z1,z2]
 
-# ╔═╡ d259ec0e-a21a-11eb-2c99-818e7ee1c4fc
-begin
-	jac=jacobian(z,x)
-	string(jac)
-end
+# ╔═╡ 03abf0e0-a9ca-11eb-339c-5599c951871c
+jac=jacobian(z,x)
 
-# ╔═╡ 4ab11600-0254-11eb-21f0-99d614d334c9
+# ╔═╡ 2d9109e0-a9ca-11eb-08a5-7596eee9e4b2
 det(jac)
 
 # ╔═╡ 9ec274e0-022d-11eb-085a-7907b8f1eb93
@@ -234,21 +227,24 @@ $$s^{(\gamma)} +d_{\gamma-1}s+...+d_1s+ d_0  =0$$
 Hay que hacer que el polinomio sea hurwitz
 Lo más fácil es constuirlo, si queremos unos polos $p_1$, $p_2$... $p_{\gamma}$ podemos hacer que el polinomio sea 
 
-$$(1-p_1)(1-p_2)...(1-p_{\gamma})$$
+$$(s-p_1)(s-p_2)...(s-p_{\gamma})$$
 """
 
 
 # ╔═╡ aed8d350-0265-11eb-1223-1dd0651632b6
 begin
-	p1=-1
-	p2=-2
+	#expandir (s-p1)*(s-p2)) y comparar con lo deseado
+	p1=p2=-1
 	s=0
 	@variables s
 	expand((s-p1)*(s-p2))
 end
 
 # ╔═╡ 0d736c40-0266-11eb-3433-ad75c1617314
-md"Entonces $d_0$ y $d_1$ son... 2 y 3 ;)"
+md"Entonces $d_0$ y $d_1$ son 1 y 2 ;)"
+
+# ╔═╡ 454272d0-a9cb-11eb-36db-ffb885a95a52
+string(uc)
 
 # ╔═╡ f54ff5b2-0266-11eb-1df3-49f3c95729c7
 md"Ahora lo ponemos todo junto"
@@ -257,36 +253,15 @@ md"Ahora lo ponemos todo junto"
 function control_1_estabilizacion(x,p,t)
 	x1,x2=x
 	M,g,L,J=p  
-	d0=2
-	d1=3
+	d0=1
+	d1=2
 	
-	y=x1
-	dy=x2
+	y=x1 #o si lo preferís z1
+	dy=x2 #z2
 	v=-d0*y-d1*dy
 	u=J*v + L*M*g*sin(x1)
 	return u
 end	
-
-# ╔═╡ 506a20d0-026f-11eb-2bde-f94724bd27f3
-begin
-	#control_1(x,p,t)=0
-	referencia_1(t)=0
-	
-	control_1=control_1_estabilizacion
-		
-	#control_1=control_1_seguimiento
-	#referencia_1=referencia_1_a
-end
-
-# ╔═╡ 85c0d350-022e-11eb-0873-c118ffde014c
-function derivadas_ejemplo1(x,p,t)
-	x1,x2=x
-	M,g,L,J=p
-	u=control_1(x,p,t)#calculamos el control
-	dx1=x2
-    dx2=-M*g*L/J*sin(x1)+u/J
-	dx=[dx1 dx2] #no hace falta return dx
-end
 
 # ╔═╡ 3b125190-0269-11eb-2473-33cbb7451779
 md"Si queremos podemos sustituir todo **ojo a veces no compensa** (por que queda muy largo y difícil de depurar) en este caso si"
@@ -303,7 +278,7 @@ Una vez linealizado seguir una referencia es fácil, si definimos errores
 
 $$e_0=y_r-y$$
 
-$$\dot e_0= \dot y_r - \dot y = e1$$
+$$\dot e_0= \dot y_r - \dot y = e_1$$
 
 ...
 
@@ -313,7 +288,7 @@ Es todo igual pero añadiendo $y_r$ y con el signo contrario (aparece -v en vez 
 
 $$v=d_0e_0+d_1e_1+...+d_{\gamma-1}e_{\gamma-1} + y_r^{(\gamma)}$$
 
-**OJO** no solo cambian los signos sino que los índices ahora están "bien" ya que $y=e_0$ no como antes que era $z_1$
+**OJO a la notación** no solo cambian los signos sino que *los índices ahora están "bien"* ya que $y=e_0$ no como antes que era $z_1$
 """
 
 # ╔═╡ a7745f70-026b-11eb-1abe-d1944165d231
@@ -337,13 +312,37 @@ function control_1_seguimiento(x,p,t)
 	y=x1
 	dy=x2
 	
-	e0=yr-y
+	e0=yr-y #esto es lo nuevo
 	e1=dyr-dy
+	v=d0*e0 + d1*e1 + ddyr #y aquí también aparece la referencia y cambian los signos
+	#v=-d0*y-d1*dy esto es lo de antes 
+	#v=-d0*z1-d1*z2 o en términos de las zetas
 	
-	v=d0*e0+d1*e1 + ddyr
+	
 	u=J*(v + L*M*g*sin(x1)/J)
 	return u
 end	
+
+# ╔═╡ 506a20d0-026f-11eb-2bde-f94724bd27f3
+begin
+	#control_1(x,p,t)=0
+	#referencia_1(t)=0
+	
+	#control_1=control_1_estabilizacion
+		
+	control_1=control_1_seguimiento
+	referencia_1=referencia_1_a
+end
+
+# ╔═╡ 85c0d350-022e-11eb-0873-c118ffde014c
+function derivadas_ejemplo1(x,p,t)
+	x1,x2=x
+	M,g,L,J=p
+	u=control_1(x,p,t)#calculamos el control
+	dx1=x2
+    dx2=-M*g*L/J*sin(x1)+u/J
+	dx=[dx1 dx2] #no hace falta return dx
+end
 
 # ╔═╡ 922bccde-022d-11eb-17f2-270aae61f923
 md"""# Dinámica cero
@@ -422,11 +421,14 @@ El jacobiano es obvio que es singular (2x3)
 """
 
 # ╔═╡ ab5f1de0-0960-11eb-2cf6-414898fd1323
-string(jacobian([yb;dyb],xb))
+jacobian([yb;dyb],xb)
 
 # ╔═╡ c7d09f80-0a28-11eb-3548-11dbb05bbbbb
-md"""Vamos a seguir como si nada a ver que pasa...
+md"""Vamos a seguir *como si nada* a ver que pasa...
 """
+
+# ╔═╡ 77f78c80-a997-11eb-0b80-8da3a424a52f
+string(solve_for(ddyb~v,u))
 
 # ╔═╡ 706b0500-0a2d-11eb-023e-1de0809fe6cf
 referencia_2(t)=0*referencia_1_a(t)
@@ -446,9 +448,9 @@ function control_2(x,p,t)
 	e0=yr-y
 	e1=dyr-dy
 	
-	v=d0*e0+d1*e1 + ddyr
+	v=d0*e0 + d1*e1 + ddyr
 	
-	u= v - 4*x2*x1 - 2*sin(x2)
+	u= v - 2*sin(x2) - 4*x1*x2
 	return u
 end	
 
@@ -510,7 +512,7 @@ Si la salida $y(t)=0$ cero entonces:
 $y=x_3=0 \to \dot x_3=0=2x_2 \to x_2=0 \to \dot x_2=0$
 $0=0 +sin(0) + \frac{u}{2} \to u=0$
 
-$\dot x_1=-ax_1 + e^{0}0$
+$\dot x_1=-ax_1$
 
 Esto es estable si a es positivo pero *inestable* si a es negativo, eso podría explica por qué x_1 se aleja del origen (dinámica cero inestable)
 """
@@ -536,44 +538,38 @@ md"""Para comprobar la teoría ponemos la referenica a cero, cuando la salida se
 # ╟─85c03440-0274-11eb-3c81-514259334750
 # ╟─2a98e6e0-a227-11eb-026a-bb5831f344bb
 # ╟─e3e9d0a0-022c-11eb-04ba-97dcb9ba908a
-# ╠═6831eb02-023b-11eb-0842-fbe8f8eb8937
+# ╟─6831eb02-023b-11eb-0842-fbe8f8eb8937
 # ╠═5fe018a0-023b-11eb-1e69-d59b562edc9b
-# ╠═1476277e-a216-11eb-141c-fb0e6c9b932e
-# ╠═74befac0-a218-11eb-2ab4-ad0557f4f5ff
-# ╠═82dd7b40-a218-11eb-037f-c50647e787de
-# ╠═13bcbb30-a219-11eb-16d1-81b00e78dc73
-# ╠═b15fed52-a21c-11eb-031d-d31eb7871814
+# ╠═1c0442a0-a993-11eb-1b2d-55eb8b868dc7
 # ╠═3ff84c30-0248-11eb-33ba-f99304ee8672
-# ╠═7accfd80-023c-11eb-318d-571f57cd5d48
-# ╠═667e2c90-a215-11eb-02b2-07852ab51e6f
-# ╠═c37e74f2-023c-11eb-3d52-ab5ef1b12d64
-# ╠═d792d670-023c-11eb-13e2-d72bc2ce9857
-# ╠═f08ba8f0-023c-11eb-2903-5bd99458a0b0
-# ╠═39ce8af0-023d-11eb-3178-857433b369ae
+# ╠═6d535e50-a99a-11eb-08c1-4d98301e53b3
+# ╠═5525d1a0-a9c7-11eb-1de0-1700c9c20460
+# ╠═65893910-a9c7-11eb-2f9f-ebadf375cdbc
+# ╠═a0571620-a9c7-11eb-070f-297fa9e406b2
+# ╟─39ce8af0-023d-11eb-3178-857433b369ae
 # ╟─4c478bf0-023d-11eb-0dce-439d408010fa
 # ╟─b7e08f60-023d-11eb-13cb-ad5285e900d8
-# ╠═82580d60-0250-11eb-000c-d3b1c91e211f
-# ╠═b29a1880-024e-11eb-0d4e-6f2ef620a33d
+# ╠═697f24d0-a99a-11eb-26e6-a749fb04cb0f
 # ╟─9ecc5ff0-022d-11eb-3715-51831818d04f
-# ╠═32f37f70-0250-11eb-1d4a-c33b7655d0fa
-# ╠═36b289f0-a217-11eb-1e44-bf78273d20a7
-# ╠═da9b1972-a216-11eb-1106-793e544c2e8a
+# ╠═65ad8360-a99a-11eb-3764-aded1015107e
+# ╠═4b753d20-a9c8-11eb-320a-d58ec5e3c431
+# ╠═6e31c180-a9c8-11eb-3893-f55415fa4fad
 # ╟─561e07e2-0250-11eb-1380-4b5dfa861cd6
-# ╠═55c03070-0250-11eb-07aa-db17023d2b8f
+# ╠═64db3f40-a99a-11eb-01df-d3ca4846ca33
 # ╟─de497f50-0250-11eb-028e-ffe56cf1ba45
-# ╠═a88bc90e-024e-11eb-33ae-6bea88327d9b
-# ╠═75042f80-0959-11eb-0a08-eb14553eb3b0
-# ╠═75137750-023e-11eb-2a2a-33728fec7368
-# ╠═0db8c9c0-0252-11eb-199c-2d69997c6769
-# ╠═207897c2-0252-11eb-0d9c-79192f7f4466
+# ╠═c2f97c40-a99a-11eb-30e7-359effec0a1d
+# ╠═85e1f1f0-a9c9-11eb-2a97-1944f7fcb34b
+# ╟─0db8c9c0-0252-11eb-199c-2d69997c6769
+# ╠═dd56c0c2-a99a-11eb-0c87-8f8e2c6321a8
 # ╟─72e4e740-022d-11eb-3a63-31023b9d464f
-# ╠═6ea86650-023e-11eb-010f-7753ce153553
-# ╠═d259ec0e-a21a-11eb-2c99-818e7ee1c4fc
-# ╠═24c4e010-0255-11eb-00cc-6b84a43550e1
-# ╠═4ab11600-0254-11eb-21f0-99d614d334c9
+# ╠═f1e0ee80-a99a-11eb-0c06-85f8d7086aac
+# ╠═03abf0e0-a9ca-11eb-339c-5599c951871c
+# ╠═183a6460-a9ca-11eb-340e-872e08f29a9e
+# ╠═2d9109e0-a9ca-11eb-08a5-7596eee9e4b2
 # ╟─9ec274e0-022d-11eb-085a-7907b8f1eb93
 # ╠═aed8d350-0265-11eb-1223-1dd0651632b6
 # ╟─0d736c40-0266-11eb-3433-ad75c1617314
+# ╠═454272d0-a9cb-11eb-36db-ffb885a95a52
 # ╟─f54ff5b2-0266-11eb-1df3-49f3c95729c7
 # ╠═2814f040-0267-11eb-3f4d-2933c0c3528a
 # ╟─3b125190-0269-11eb-2473-33cbb7451779
@@ -592,12 +588,13 @@ md"""Para comprobar la teoría ponemos la referenica a cero, cuando la salida se
 # ╟─5c70004e-095b-11eb-0068-89e38689515b
 # ╠═ab5f1de0-0960-11eb-2cf6-414898fd1323
 # ╟─c7d09f80-0a28-11eb-3548-11dbb05bbbbb
+# ╠═77f78c80-a997-11eb-0b80-8da3a424a52f
 # ╠═c8abde00-095c-11eb-237c-a9fd2bd95b8a
 # ╠═706b0500-0a2d-11eb-023e-1de0809fe6cf
 # ╟─c8a04540-095c-11eb-0b16-0bbf6ae0b6eb
 # ╠═062714d0-0a2e-11eb-073f-6bd47b020c54
 # ╠═c900ad60-095f-11eb-3d18-9f187abdb9b3
 # ╠═667f8b70-095f-11eb-08a8-0f49a920e3cb
-# ╠═b117ab50-04cc-11eb-1580-fdafb3c3213b
+# ╟─b117ab50-04cc-11eb-1580-fdafb3c3213b
 # ╟─1f8be93e-0962-11eb-14f4-73a59ba80a72
 # ╟─41656a80-0a7c-11eb-1070-db649ce73728

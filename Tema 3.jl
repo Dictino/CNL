@@ -50,21 +50,27 @@ md"""# Conjeturas A-K
 
 # ╔═╡ 4628f590-dbe3-11ea-2a7a-83cabda49ee7
 function conjeturas(H,K)	
-		#respuesta en frecuencia
-		wp=10.0.^(-50:0.01:50) #rango de 10^-50 a 10ymin=^50
-	    wn=-10.0.^(50:-0.01:-50) 
-		w=vcat(wn,wp)#todas las frecuencias incluidas las negativas
-	    Hs=H.(w*im)
-	    plot(real.(Hs),imag.(Hs), label=false)
-	    #pinta la flecha
-	    quiver!([real(H(0))],[imag(H(0))],quiver=([real(H(0.01*im)-H(0))],[imag(H(0.01*im)-H(0))]),label=false)
-	#para que el movimiento sea intuitivo el slider ha de ir desde la derecha 
-	
-	#pinta el punto
-		scatter!([-1/K],[0],label=false)
-		title!("""La respuesta en frecuencia ha de rodear al punto 
-		en sentido antihorario tantas veces como polos inestables
-		hay, K=$(K)""")
+	#respuesta en frecuencia
+	wp=10.0.^(-50:0.01:50) #rango de 10^-50 a 10ymin=^50
+	wn=-10.0.^(50:-0.01:-50) 
+	w=vcat(wn,0,wp)#todas las frecuencias incluidas las negativas
+	Hs=H.(w*im)
+	plot(real.(Hs),imag.(Hs), label=false)
+ylims!(-5,5)
+	#pinta la flecha en la frecuencia w0
+if isfinite(H(0))
+	w0=0
+else
+	w0=100
+end
+	quiver!([real(H(w0*im))],[imag(H(w0*im))],quiver=([real(H((w0+0.01)*im)-H(w0*im))],[imag(H((w0+0.01)*im)-H(w0*im))]),label=false)
+#para que el movimiento sea intuitivo el slider ha de ir desde la derecha 
+
+#pinta el punto
+	scatter!([-1/K],[0],label=false)
+	title!("""La respuesta en frecuencia ha de rodear al punto 
+	en sentido antihorario tantas veces como polos inestables
+	hay, K=$(K)""")
 end
 
 # ╔═╡ 490c8852-909f-11eb-2522-ad23744ce9d8
