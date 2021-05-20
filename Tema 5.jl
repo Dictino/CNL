@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.10
+# v0.12.21
 
 using Markdown
 using InteractiveUtils
@@ -23,7 +23,11 @@ using LaTeXStrings
 using PlutoUI
 
 # ╔═╡ 0cbfa5d0-2506-11eb-1485-7733b85a975b
-using SymEngine
+using SymEngine 
+#hay muchos paquete simbólicos, el más completo (límites integrales, sustiuciones...) es SymPy, Symbolics es nuevo y en desarrollo y SymEngine es simple y suficiente para lo que vamos a hacer
+
+# ╔═╡ 5aded872-b8b4-11eb-0277-93d61bffe2fd
+md"# Tema 5 Control en modo deslizante"
 
 # ╔═╡ f8105520-250b-11eb-1a6b-0129a812bcee
 md"""# Vamos a crear nuetro propio simulador con *Euler*
@@ -39,14 +43,17 @@ function simular(x0,planta,control,parametros,tf,Δt)
 	t=0:Δt:tf
 	estado=copy(x0);
 	x=[]
-	u=[]
-	for n=1:length(t)
-		señal_de_control=control(estado,t[n],parametros)
+	push!(x,estado)
+	u=Float64[control(estado,t[1],parametros)[1]]
+	
+	for n=1:(length(t)-1)
+		señal_de_control=control(estado,t[n],parametros)[1] #el [1] se entenderá luego
 		derivada=planta(estado,señal_de_control,t[n],parametros)
-		estado=estado+derivada*Δt
+		estado=estado+derivada*Δt #euler
 		push!(x,estado)
 		push!(u,señal_de_control)
 	end
+	
 	return (x,u,t)
 end
 
@@ -85,9 +92,9 @@ control_1a(x,t,p)=-2*sign(x)
 
 # ╔═╡ f77e1fc0-0e2c-11eb-0051-d7eee614b171
 md"""# Hemos hecho *trampa*, ¿Dónde está el control equivalente?
-El control equivalente es el que mantiene $x$ en cero es decir:
+El control equivalente es el que mantiene $s=x$ en cero es decir:
 
-$0= \dot x=sin(t)+acos(x)+u=sin(t)+acos(0)+u$
+$x(t)=0 \to  \dot x = 0 =sin(t)+acos(x)+u=sin(t)+acos(0)+u$
 $0=sin(t)+a+u \to u=-a-sin(t)$
 
 No está ni hace falta, ¡Nunca se ejecuta! Vamos a verlo
@@ -207,7 +214,7 @@ Queremos seguir la referenica $ y_r=sin(t) $
 """
 
 # ╔═╡ 595542f0-25cf-11eb-308d-bb524a624b04
-md"Defimos las funciones del tema 4"
+md"Defimos las función igual que en el tema 4"
 
 # ╔═╡ 41d2207e-25cf-11eb-1cbf-a599e3a5d2fc
 begin
@@ -229,7 +236,7 @@ begin
 end
 
 # ╔═╡ 32f2cfd0-2505-11eb-36a3-cdaec55a91cc
-x1,x2,u,a,b,c=symbols("x1,x2,u,a,b,c")
+x1,x2,u,a,b,c=symbols("x1,x2,u,a,b,c") #o @vars x1... pero inicializando antes
 
 # ╔═╡ ff0eafe0-0e2a-11eb-3e1c-5dd70c43c3c1
 let
@@ -314,9 +321,6 @@ begin
 	y=x1
 end
 
-# ╔═╡ 9ac54660-281b-11eb-1456-8db3fcda92b4
-
-
 # ╔═╡ 992e79f0-25cf-11eb-0885-9f431d9e2ed6
 dy=derivada(y,[x1 x2],[dx1 dx2],1)
 
@@ -338,11 +342,8 @@ yr,dyr,ddyr=symbols("yr,dyr,ddyr")
 # ╔═╡ e1f2879e-25d2-11eb-04d4-b53a77d90c5f
 e1=yr-y
 
-# ╔═╡ 9ac55fb0-2816-11eb-12da-a9ddac1c913c
-de1=derivada(e1,[x1 x2 yr dyr],[dx1 dx2 dyr ddyr])
-
 # ╔═╡ 14e23520-2817-11eb-2f93-0779085f77a5
-md"""La teoría es que $S=(\frac{d}{dt}+k)^ne_1$
+md"""La teoría es que $S=(\frac{d}{dt}+k)^{n-1}e_1$
 
 Para el caso n=2
 
@@ -350,6 +351,9 @@ $S=\dot e_1 +ke_1$"""
 
 # ╔═╡ 37fe65b0-2817-11eb-2cdb-2921b513978c
 k=symbols("k")
+
+# ╔═╡ 9ac55fb0-2816-11eb-12da-a9ddac1c913c
+de1=derivada(e1,[x1 x2 yr dyr],[dx1 dx2 dyr ddyr])
 
 # ╔═╡ 0ed1a02e-2817-11eb-0b92-e5feb0f17c63
 S=de1+k*e1
@@ -361,24 +365,30 @@ dS=derivada(S,[x1 x2 yr dyr],[dx1 dx2 dyr ddyr])
 md"Identificamos términos $\dot S=-f-gu$"
 
 # ╔═╡ a8a18df2-25cf-11eb-38b7-e128e53ba029
-g=-c
+g=-diff(dS,u)
 
 # ╔═╡ 081bb16e-25d0-11eb-28e6-c3e5a042fce2
 f=-(dS+g*u) #el resto vamos.... OJO A LOS SIGNOS
 
 # ╔═╡ f77c9930-25d2-11eb-287f-655c63ea721e
-md"""Acotar $|f/g|$ un proceso **artesanal** se puede hacer de muchas formas
+md"""Acotar $|f/g|$ un proceso **artesanal** se puede hacer **de muchas formas**
 recordemos que $ a \in [-1,7] $,  $ b \in [1,2] $ y $ c \in [1.5,2.8] $
 """
 
+# ╔═╡ cf8b68e2-b8ba-11eb-0177-8fa5c7f332bd
+expand(f/g)
+
+# ╔═╡ 097834c0-b8bb-11eb-3e52-c1d543ef9fb6
+md"Y ahora vamos a acotar"
+
 # ╔═╡ 9c2a7480-25d2-11eb-0479-751c0dc8b88e
-rho=(abs(ddyr) + 7*abs(x1) + 2*x2^2 + k*abs(dyr) + (abs(x2) + 1)*(k + 1))/1.5
+rho=(abs(ddyr) + 7*abs(x1) + 2*x2^2 + k*abs(dyr)+ k*abs(x2) + k + abs(x2) + 1)/1.5
 
 # ╔═╡ abc0604e-2823-11eb-1708-83268e22b7bc
 md"## Todo junto"
 
 # ╔═╡ 2b9f72b0-281b-11eb-1fbc-15b3e67b017d
-referencia(t)=(sin(t),cos(t),-sin(t))
+referencia(t)=0.0.*(sin(t),cos(t),-sin(t))
 
 # ╔═╡ 42884660-281a-11eb-015e-29ff1b21dfe0
 function control_seguimiento(x,t,p)
@@ -394,10 +404,12 @@ function control_seguimiento(x,t,p)
 	
 	S=de1+k*e1
 	
-	rho=(abs(ddyr) + 7*abs(x1) + 2*x2^2 + k*abs(dyr) + (abs(x2) + 1)*(k + 1))/1.5
-	u=tanh(S/ϵ)*(rho+ε)  
-end
+	#RELLENAR ESTO
+	u=tanh(S / ϵ)*((abs(ddyr) + 7*abs(x1) + 2*x2^2 + k*abs(dyr)+ k*abs(x2) + k + abs(x2) + 1)/1.5 + ε)
 
+	return (u,S,e1,de1)  #Saco todo esto para pintarlo luego fácilmente 
+	#por eso la función simular se queda SOLO CON u
+end
 
 # ╔═╡ 9acf5880-281b-11eb-3aa5-9b6df9ac7501
 function planta_ejemplo2(x,u,t,p)
@@ -407,9 +419,6 @@ function planta_ejemplo2(x,u,t,p)
     dx2=a*x1+b*x2^2+c*u
 	dx=[dx1 dx2]
 end
-
-# ╔═╡ 48566400-282e-11eb-1ce8-d1f266a6493b
-referencia(3)
 
 # ╔═╡ e8ee4712-281b-11eb-0fbf-7783935a0075
 @bind a2 Slider(-1:0.1:7)
@@ -443,8 +452,16 @@ let
 	yr=[ref[1] for ref in refs]
 	dyr=[ref[2] for ref in refs]
 	
-	e1=yr-y
-	de1=dyr - (x2 + sin.(x1))
+	#truco para pintar más cosas sin tener que reescribirlas
+	Ss=[]
+	e1s=[]
+	de1s=[]
+	for i=1:length(t)
+		_,S,e1,de1=control_seguimiento(estados[i],t[i],parametros)
+		push!(Ss,S)
+		push!(e1s,e1)
+        push!(de1s,de1)
+	end
 	
 	if variables=="estados"
 		plot(t,x1, xaxis=L"t",yaxis=L"x(t)",label=L"y=x_1")
@@ -452,26 +469,32 @@ let
 	    title!("a=$a2, b=$a2, c=$a2")
 	    fig1=plot!(t,yr,line=:dot,label=L"y_r")
 	else
-		plot(t,e1, xaxis=L"t",yaxis=L"e(t)",label=L"e_1")
-	    plot!(t,de1, xaxis=L"t",label=L"e_2=\dot e_1")
+		plot(t,e1s, xaxis=L"t",yaxis=L"e(t)",label=L"e_1")
+	    plot!(t,de1s, xaxis=L"t",label=L"e_2=\dot e_1")
         title!("a=$a2, b=$a2, c=$a2")
 		fig1=hline!([0],line=:dot,label=:none)
 	end
 	
-	fig2=plot(t,u, xaxis=L"t",yaxis=L"u",legend=false)
+	fig2=plot(t,Ss, xaxis=L"t",yaxis=L"s",legend=false)
+	
+	fig3=plot(t,u, xaxis=L"t",yaxis=L"u",legend=false)
 
     if variables=="estados"
-		fig3=plot(x1,x2, xaxis=L"x_1", yaxis=L"x_2",label=:none)
+		fig4=plot(x1,x2, xaxis=L"x_1", yaxis=L"x_2",label=:none)
 	else
-		fig3=plot(e1,de1, xaxis=L"e_1", yaxis=L"e_2",label=:none)
+		fig4=plot(e1s,de1s, xaxis=L"e_1", yaxis=L"e_2",label=:none)
 	end
 
-	l = @layout [a ; b ;c]
-	plot(fig1,fig2,fig3, layout=l, size=(600,800))
+	l = @layout [a ; b ;c ; d]
+	plot(fig1,fig2,fig3, fig4, layout=l, size=(600,800))
 	
 end
 
+# ╔═╡ 28d56f3e-b8c0-11eb-1329-21f533ccddd9
+
+
 # ╔═╡ Cell order:
+# ╟─5aded872-b8b4-11eb-0277-93d61bffe2fd
 # ╟─f8105520-250b-11eb-1a6b-0129a812bcee
 # ╠═96dbe960-2509-11eb-1248-b7c75a8974dd
 # ╟─ba989850-0a31-11eb-1f3a-e363a7e0207e
@@ -508,31 +531,32 @@ end
 # ╟─41d2207e-25cf-11eb-1cbf-a599e3a5d2fc
 # ╠═32f2cfd0-2505-11eb-36a3-cdaec55a91cc
 # ╠═b1c43a50-25ce-11eb-3478-f13e9174ccc9
-# ╠═9ac54660-281b-11eb-1456-8db3fcda92b4
 # ╠═992e79f0-25cf-11eb-0885-9f431d9e2ed6
 # ╠═806542f0-25cf-11eb-39c8-db55ed5e86a7
 # ╟─c5f21a70-25d2-11eb-2af8-395671e44537
 # ╟─2cd935f0-25d0-11eb-1b07-a7002584aa16
 # ╠═77f468f0-2816-11eb-2dc5-25eb17f3a834
 # ╠═e1f2879e-25d2-11eb-04d4-b53a77d90c5f
-# ╠═9ac55fb0-2816-11eb-12da-a9ddac1c913c
 # ╟─14e23520-2817-11eb-2f93-0779085f77a5
 # ╠═37fe65b0-2817-11eb-2cdb-2921b513978c
+# ╠═9ac55fb0-2816-11eb-12da-a9ddac1c913c
 # ╠═0ed1a02e-2817-11eb-0b92-e5feb0f17c63
 # ╠═a3caae20-2817-11eb-09e6-59d6464cef2a
-# ╠═aff35570-25cf-11eb-1627-43fe902b9db5
+# ╟─aff35570-25cf-11eb-1627-43fe902b9db5
 # ╠═a8a18df2-25cf-11eb-38b7-e128e53ba029
 # ╠═081bb16e-25d0-11eb-28e6-c3e5a042fce2
 # ╟─f77c9930-25d2-11eb-287f-655c63ea721e
+# ╠═cf8b68e2-b8ba-11eb-0177-8fa5c7f332bd
+# ╟─097834c0-b8bb-11eb-3e52-c1d543ef9fb6
 # ╠═9c2a7480-25d2-11eb-0479-751c0dc8b88e
 # ╟─abc0604e-2823-11eb-1708-83268e22b7bc
 # ╠═2b9f72b0-281b-11eb-1fbc-15b3e67b017d
 # ╠═42884660-281a-11eb-015e-29ff1b21dfe0
 # ╠═9acf5880-281b-11eb-3aa5-9b6df9ac7501
-# ╠═48566400-282e-11eb-1ce8-d1f266a6493b
 # ╠═e8ee4712-281b-11eb-0fbf-7783935a0075
 # ╠═0e04e810-281c-11eb-3e72-c58bf8d7ce0d
 # ╠═1e143c10-281c-11eb-1117-29f72834203e
 # ╠═756a3570-2833-11eb-2596-c37768e5a75b
 # ╠═be9d11e0-2833-11eb-1e9f-d3bfc428c893
 # ╠═8bdbadb0-281b-11eb-1786-3bef9aee1d39
+# ╠═28d56f3e-b8c0-11eb-1329-21f533ccddd9
