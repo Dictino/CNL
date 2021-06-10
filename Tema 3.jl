@@ -19,7 +19,7 @@ using PlutoUI
 # ╔═╡ c09c0e20-d8be-11ea-11be-0966527e6f2d
 using Plots
 
-# ╔═╡ c62fd840-90a5-11eb-3330-45327b74ca1f
+# ╔═╡ b711bf40-c912-11eb-120d-1bb53ca25d17
 using ControlSystems
 
 # ╔═╡ cfbeb720-90a8-11eb-1ac2-3bda60b2285c
@@ -55,15 +55,26 @@ function conjeturas(H,K)
 	wn=-10.0.^(50:-0.01:-50) 
 	w=vcat(wn,0,wp)#todas las frecuencias incluidas las negativas
 	Hs=H.(w*im)
-	plot(real.(Hs),imag.(Hs), label=false)
-ylims!(-5,5)
+	
+	#si hay polos en el eje imaginario habrá valores infinitos o NaN para pintar bien esos casos los "recorto"
+	
+	recortar(x)=min(max(x,-10^3),10^3)
+	
 	#pinta la flecha en la frecuencia w0
-if isfinite(H(0))
-	w0=0
+if isfinite(maximum(norm.(Hs)))
+	#pinto normalmente
+	plot(real.(Hs),imag.(Hs), label=false)
+	#pinta la flecha
+	quiver!([real(H(w0*im))],[imag(H(w0*im))],
+			quiver=([real(H((w0+0.01)*im)-H(w0*im))],
+				[imag(H((w0+0.01)*im)-H(w0*im))]),label=false)
 else
-	w0=100
+	#en este caso es cuando hay que recortar
+	plot(recortar.(real.(Hs)),recortar.(imag.(Hs)), label=false)
+	ylims!((-10,10))
+	xlims!((-10,10))
 end
-	quiver!([real(H(w0*im))],[imag(H(w0*im))],quiver=([real(H((w0+0.01)*im)-H(w0*im))],[imag(H((w0+0.01)*im)-H(w0*im))]),label=false)
+
 #para que el movimiento sea intuitivo el slider ha de ir desde la derecha 
 
 #pinta el punto
@@ -86,9 +97,6 @@ begin
 	K_max_conjeturas=10
 	@bind sliderAK Slider((-1:0.001:1)*K_max_conjeturas,default=1.0)
 end
-
-# ╔═╡ c87918e0-dbe3-11ea-1d12-fb31f8ea5bfb
-conjeturas(H1,sliderAK)
 
 # ╔═╡ 29e11c20-90ae-11eb-1348-0f5a981d3361
 md" esto sugiere que es estable en el sector $[-\frac{10}{3}, \infty)$
@@ -333,6 +341,75 @@ md"""# Criterio de popov
     + La parte del ingregrador es positiva ($$H(s) \to \infty$$  si  $$s\to 0^+$$) 
     + Quitando el integrador la planta es estable"""
 
+# ╔═╡ 7c27fd1e-c90f-11eb-0edf-29b2a8b2867b
+md"Como ejemplo podemos usar la planta H1 añadiendo un polo en el origen:
+
+$H_3=\frac{s+3}{s(s+5)(s+2)}$"
+
+# ╔═╡ b7044bc0-9880-11eb-31b6-b1578086897a
+H3(s)=H1(s)/s
+
+# ╔═╡ bc4b38a0-c913-11eb-2eb9-25b5e6468a61
+md"## Primero a ver que nos dicen las cojneturas AK"
+
+# ╔═╡ 31d44760-c90f-11eb-3a7a-ffb4d6c20b53
+begin
+	K_max_conjeturas3=10
+	@bind sliderAK3 Slider((-1:0.001:1)*K_max_conjeturas3,default=1.0)
+end
+
+# ╔═╡ 439f2e10-c90f-11eb-1b76-eb23238ba418
+begin
+	conjeturas(H3,sliderAK3)
+	ylims!(-1,1) #hay que hacer zoom para ver algo
+	xlims!(()) #esto directamente quita el límite de x y lo pone automático
+end
+
+# ╔═╡ 710513f0-c910-11eb-2abb-3df94293cdb4
+md"**OJO** Ahora no está claro cuando la respuesta *rodea* al punto ya que es abierta, lo que si es importante es ver cuando **cambiamos de lado** (la estabilidad cambia al pasar de un lado de la curva al otro lado).
+
+En este caso se cambia de lado cuando $k=0$ y nos aproximamos a la curva cuando $k=\pm \infty$
+
+Luego basta con tomar un ejemplo concreto de ganancia ($k=1$ por ejemplo) y ver si es estable para ver en qué lado es estable y en cual inestable)
+
+Realimentando con $k=1$ tenemos
+
+$H_{LazoCerrado}=\frac{H_3}{1+H_3}=\frac{\frac{s+3}{s(s+5)(s+2)}}{1+\frac{s+3}{s(s+5)(s+2)}}=\frac{s+3}{s(s+5)(s+2)+(s+3)}$
+
+$H_{LazoCerrado}=\frac{s+3}{s^3+7s^2+11s+3}$
+
+Que es estable por Routh–Hurwitz ya que 
+
+$7>0$
+$3>0$
+$7 \cdot 11>3$
+
+Luego el lado que contine $k=1$ es estable y el otro inestable por tanto el intervalo estable es $[0, \infty)$.
+
+Si no queremos hacerlo a meno podemos usar la toolbox de control:"
+
+
+
+# ╔═╡ d8394bbe-c912-11eb-250f-1b7385c0a536
+S=tf([1.0, 0.0],[1.0])
+
+# ╔═╡ 76c049a0-90ac-11eb-1892-a31cb390383d
+md"Evaluando H(s) con S nos da la función de transferencia (esto funciona sólo por que H es racional)"
+
+# ╔═╡ 33a205b0-c913-11eb-22a9-d51437c6252c
+H3s=H3(S)
+
+# ╔═╡ 420138b0-c913-11eb-2509-558e30b8048b
+#el lazo cerrado con ganancia 1
+H_LC=minreal(H3s/(1+H3s)) #minreal es para cancelar los ceros y polos sobrantes
+
+# ╔═╡ 5c92fab0-c913-11eb-0542-2bd8ac7560de
+#y por fin los ceros y los polos
+zpk(H_LC)
+
+# ╔═╡ 2cfce6fe-c915-11eb-1f34-5be3aed8045a
+md"## Ahora a ver qué dice Popov"
+
 # ╔═╡ 497f9250-d8bc-11ea-194d-77979b94814d
 function popov(H,K,alpha)
 	if K<0
@@ -370,9 +447,6 @@ md"K=$(K)"
 # ╔═╡ e443a3e0-d8c0-11ea-362f-75314f8b2cbb
 alpha=1/tan(pendiente*pi/180)
 
-# ╔═╡ b7044bc0-9880-11eb-31b6-b1578086897a
-H3(s)=H1(s)/s
-
 # ╔═╡ dbcceee0-d985-11ea-2a3e-f9c3ec08cb75
 popov(H3,K,alpha)
 
@@ -391,15 +465,6 @@ $y=Cx$
 Asumiremos siempre en este tema que $D=0$
 "
 
-# ╔═╡ 4bcbe7b0-90a5-11eb-01d9-31d8ee58dab4
-#using Pkg; Pkg.add("ControlSystems")
-
-# ╔═╡ b81aff3e-90a6-11eb-3d82-4daa598b3cc3
-S=tf([1.0, 0.0],[1.0])
-
-# ╔═╡ 76c049a0-90ac-11eb-1892-a31cb390383d
-md"Evaluando H(s) con S nos da la función de transferencia (esto funciona sólo por que H es racional)"
-
 # ╔═╡ e7264d30-90a6-11eb-07fc-d1f2120385cd
 H=H1(S)
 
@@ -408,13 +473,6 @@ md"Obtenido esto podemos pasar al espacio de estados"
 
 # ╔═╡ f2cdb330-90a6-11eb-3169-8fb43ab0c79c
 estados=ss(H)
-
-# ╔═╡ b7ddca30-90dd-11eb-14c6-fd9b8bae1a48
-md"También podemos hacer otras cosas como ver los polos"
-
-# ╔═╡ 5a13c7b0-90dd-11eb-341c-6124df77784c
-#Una forma sencilla de ver dónde están los polos
-zpk(H)
 
 # ╔═╡ a4378a10-90ac-11eb-0041-a9145a07928c
 md"Definimos ahora el sistema"
@@ -448,7 +506,7 @@ begin
 	fx=f.(x)
 	f_max=maximum(fx)
 	f_min=minimum(fx)
-	plot(x,fx)
+	fig1=plot(x,fx)
 	plot!(x,k1*x,label="$(k1)*x",color=:red)
 	plot!(x,k2*x,label="$(k2)*x",color=:red)
 	sector1 = Shape([(0.0, 0.0), (maximo, k1*maximo), 
@@ -459,7 +517,18 @@ begin
 	plot!(sector2, fillcolor = plot_color(:yellow, 0.3),label=false)
 	plot!(ylims = (f_min,f_max))
 	title!("La función ha de estar dentro de la zona amarilla")
+	
+	fig2=plot(x,fx./x,label="f(x)/x")
+	sector3 = Shape([(-maximo, k1), (maximo, k1), 
+			   (maximo, k2), (-maximo, k2),(-maximo, k1)])
+	plot!(sector3, fillcolor = plot_color(:yellow, 0.3),label=false)
+	
+	l = @layout [a; b]
+	plot(fig1,fig2, layout=l)
 end
+
+# ╔═╡ 0eae14a0-c923-11eb-115a-616a0e34d031
+max(1,NaN)
 
 # ╔═╡ d6fd4a4e-90e0-11eb-34bf-ab3bb29cc905
 md"Jugando un poco es fácil ver que es  $[-\frac{10}{3}, \infty)$
@@ -473,7 +542,7 @@ Y ver que toma cualquier valor entre $-\frac{10}{3}$ (cuando $x \to 0$) e $\inft
 # ╔═╡ af179aae-90a7-11eb-2a7b-1b96a28c8ebc
 function control(y)
 	r=0
-    u=-f(y)-r
+    u=r-f(y)
 end
 
 # ╔═╡ 21c1cfa0-90a7-11eb-3c54-23fa9b677080
@@ -522,7 +591,6 @@ end
 # ╠═490c8852-909f-11eb-2522-ad23744ce9d8
 # ╠═203ea980-9090-11eb-25f8-8ff76ab5262a
 # ╠═c09c0e20-d8be-11ea-11be-0966527e6f2d
-# ╠═c87918e0-dbe3-11ea-1d12-fb31f8ea5bfb
 # ╟─29e11c20-90ae-11eb-1348-0f5a981d3361
 # ╟─66f0b770-d8c5-11ea-0ee3-7ba9b6dfb585
 # ╠═9ca66610-d985-11ea-0426-13ef5f785091
@@ -561,25 +629,31 @@ end
 # ╠═11a30cf0-9094-11eb-2af0-6f424889df66
 # ╟─105992d0-90dd-11eb-1a3d-653111528c53
 # ╟─8e2736c0-d8bb-11ea-2fde-43a428dd9281
+# ╟─7c27fd1e-c90f-11eb-0edf-29b2a8b2867b
+# ╠═b7044bc0-9880-11eb-31b6-b1578086897a
+# ╟─bc4b38a0-c913-11eb-2eb9-25b5e6468a61
+# ╟─31d44760-c90f-11eb-3a7a-ffb4d6c20b53
+# ╠═439f2e10-c90f-11eb-1b76-eb23238ba418
+# ╟─710513f0-c910-11eb-2abb-3df94293cdb4
+# ╠═b711bf40-c912-11eb-120d-1bb53ca25d17
+# ╠═d8394bbe-c912-11eb-250f-1b7385c0a536
+# ╟─76c049a0-90ac-11eb-1892-a31cb390383d
+# ╠═33a205b0-c913-11eb-22a9-d51437c6252c
+# ╠═420138b0-c913-11eb-2509-558e30b8048b
+# ╠═5c92fab0-c913-11eb-0542-2bd8ac7560de
+# ╟─2cfce6fe-c915-11eb-1f34-5be3aed8045a
 # ╠═497f9250-d8bc-11ea-194d-77979b94814d
 # ╠═fee20250-d8bb-11ea-299c-6d093b0edd20
 # ╠═cb075200-d8bb-11ea-234b-6d4b6fca9083
 # ╠═f2567110-dbe0-11ea-24a0-4d1a72151516
 # ╟─f8ad6aa0-d8bb-11ea-0dea-85d5051066fe
 # ╟─e443a3e0-d8c0-11ea-362f-75314f8b2cbb
-# ╠═b7044bc0-9880-11eb-31b6-b1578086897a
 # ╠═dbcceee0-d985-11ea-2a3e-f9c3ec08cb75
 # ╟─367c9ac0-90dd-11eb-011b-0f7c4fca2c89
 # ╟─3b303230-90a5-11eb-148b-d9c93a8c3772
-# ╠═4bcbe7b0-90a5-11eb-01d9-31d8ee58dab4
-# ╠═c62fd840-90a5-11eb-3330-45327b74ca1f
-# ╠═b81aff3e-90a6-11eb-3d82-4daa598b3cc3
-# ╟─76c049a0-90ac-11eb-1892-a31cb390383d
 # ╠═e7264d30-90a6-11eb-07fc-d1f2120385cd
 # ╟─98a5d8b2-90dd-11eb-3061-1713c5934c8c
 # ╠═f2cdb330-90a6-11eb-3169-8fb43ab0c79c
-# ╟─b7ddca30-90dd-11eb-14c6-fd9b8bae1a48
-# ╠═5a13c7b0-90dd-11eb-341c-6124df77784c
 # ╠═a4378a10-90ac-11eb-0041-a9145a07928c
 # ╠═21c1cfa0-90a7-11eb-3c54-23fa9b677080
 # ╟─17f33990-90ad-11eb-2fa5-b762b4f1138b
@@ -588,6 +662,7 @@ end
 # ╠═3387bd60-90e0-11eb-1963-7dfc892de25c
 # ╠═a134fad0-90e0-11eb-1145-df3b4d6da246
 # ╟─041d31e0-90b3-11eb-1d07-c3b6bb15e4ae
+# ╠═0eae14a0-c923-11eb-115a-616a0e34d031
 # ╟─d6fd4a4e-90e0-11eb-34bf-ab3bb29cc905
 # ╠═af179aae-90a7-11eb-2a7b-1b96a28c8ebc
 # ╠═cfbeb720-90a8-11eb-1ac2-3bda60b2285c
