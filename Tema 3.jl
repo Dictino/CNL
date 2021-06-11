@@ -56,7 +56,7 @@ function conjeturas(H,K)
 	w=vcat(wn,0,wp)#todas las frecuencias incluidas las negativas
 	Hs=H.(w*im)
 	
-	#si hay polos en el eje imaginario habrá valores infinitos o NaN para pintar bien esos casos los "recorto"
+	#si hay polos en el eje imaginario habrá valores infinitos o NaN para pintar bien esos casos los "recorto", en este caso no se cumplen las condiciones de las conjeturas pero puede igualemnte ser interesante ver el rango de estabilidad. 
 	
 	recortar(x)=min(max(x,-10^3),10^3)
 	
@@ -65,9 +65,9 @@ if isfinite(maximum(norm.(Hs)))
 	#pinto normalmente
 	plot(real.(Hs),imag.(Hs), label=false)
 	#pinta la flecha
-	quiver!([real(H(w0*im))],[imag(H(w0*im))],
-			quiver=([real(H((w0+0.01)*im)-H(w0*im))],
-				[imag(H((w0+0.01)*im)-H(w0*im))]),label=false)
+	quiver!([real(H(0))],[imag(H(0))],
+			quiver=([real(H(0.01*im)-H(0))],
+				[imag(H(0.01*im)-H(0))]),label=false)
 else
 	#en este caso es cuando hay que recortar
 	plot(recortar.(real.(Hs)),recortar.(imag.(Hs)), label=false)
@@ -98,8 +98,11 @@ begin
 	@bind sliderAK Slider((-1:0.001:1)*K_max_conjeturas,default=1.0)
 end
 
+# ╔═╡ 93bfc0d0-cb03-11eb-283b-6d01e65bed3c
+conjeturas(H1,sliderAK)
+
 # ╔═╡ 29e11c20-90ae-11eb-1348-0f5a981d3361
-md" esto sugiere que es estable en el sector $[-\frac{10}{3}, \infty)$
+md"Esto sugiere que es estable en el sector $[-\frac{10}{3}, \infty)$
 Podemos ver analíticamente el -10/3 observando que el corte es el $w_c=0$ y por lo tanto $H(w_c)=\frac{0+3}{(0+5)(0+2)}=\frac{3}{10}
  \to H(0)k=-1 \to k=-10/3$
 
@@ -350,7 +353,13 @@ $H_3=\frac{s+3}{s(s+5)(s+2)}$"
 H3(s)=H1(s)/s
 
 # ╔═╡ bc4b38a0-c913-11eb-2eb9-25b5e6468a61
-md"## Primero a ver que nos dicen las cojneturas AK"
+md"""### Primero a ver que nos dicen las cojneturas AK
+Siendo rigurosos no nos dicen **nada** ¿Por qué?
+
+El problema es que no **son aplicables** si hay un polo con parte real igual a cero como es el caso...
+
+Pero al fin y al cabo son conjeturas y lo que queremos es una idea *optimista* de dónde buscar y las conjeturas nos la dan ya que si una función cualquiera del sector es estable ha de serlo también el caso particular $f(x)=kx$ que es lo que calcularemos aquí.
+"""
 
 # ╔═╡ 31d44760-c90f-11eb-3a7a-ffb4d6c20b53
 begin
@@ -366,7 +375,9 @@ begin
 end
 
 # ╔═╡ 710513f0-c910-11eb-2abb-3df94293cdb4
-md"**OJO** Ahora no está claro cuando la respuesta *rodea* al punto ya que es abierta, lo que si es importante es ver cuando **cambiamos de lado** (la estabilidad cambia al pasar de un lado de la curva al otro lado).
+md"**OJO** Ahora no está claro cuando la respuesta *rodea* al punto ya que es abierta..
+
+Lo que si es importante es ver cuando **cambiamos de lado** (la estabilidad cambia al pasar de un lado de la curva al otro lado).
 
 En este caso se cambia de lado cuando $k=0$ y nos aproximamos a la curva cuando $k=\pm \infty$
 
@@ -591,6 +602,7 @@ end
 # ╠═490c8852-909f-11eb-2522-ad23744ce9d8
 # ╠═203ea980-9090-11eb-25f8-8ff76ab5262a
 # ╠═c09c0e20-d8be-11ea-11be-0966527e6f2d
+# ╠═93bfc0d0-cb03-11eb-283b-6d01e65bed3c
 # ╟─29e11c20-90ae-11eb-1348-0f5a981d3361
 # ╟─66f0b770-d8c5-11ea-0ee3-7ba9b6dfb585
 # ╠═9ca66610-d985-11ea-0426-13ef5f785091
