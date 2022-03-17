@@ -150,7 +150,7 @@ f_ejemplo1([x_1,x_2],[],0)
 # ╔═╡ 6eb00ba0-812b-11eb-06b8-9d782689846a
 function linealizar(f,variables,puntos)
 	#evalua el jacobiano en un punto
-	J=jacobiano(f_ejemplo1,variables)
+	J=jacobiano(f,variables)
 	for i in 1:length(variables)
 		for j in 1:length(J)
 		   J[j]=subs(J[j],variables[i],puntos[i])
