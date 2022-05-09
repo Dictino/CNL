@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.21
+# v0.18.1
 
 using Markdown
 using InteractiveUtils
@@ -7,10 +7,22 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : missing
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
+end
+
+# ╔═╡ a2fa5231-07fe-448c-bbcb-a42bf790e7bc
+begin
+    import Pkg
+    # activate a temporary environment
+    Pkg.activate(mktempdir())
+    Pkg.add([
+        Pkg.PackageSpec(name="Symbolics", version="3.0"),
+    ])
+    using Symbolics
 end
 
 # ╔═╡ f493fdb0-022f-11eb-34a6-4b133c23a71a
@@ -21,27 +33,6 @@ using Plots
 
 # ╔═╡ be8523c0-0239-11eb-0439-592e370c5618
 using LaTeXStrings #rotulos de las figuras bonitos
-
-# ╔═╡ 5fe018a0-023b-11eb-1e69-d59b562edc9b
-using Symbolics
-#alternativamente también se puede usar SymEngine pero hay que definir el jacobiano a mano
-
-# ╔═╡ 1c0442a0-a993-11eb-1b2d-55eb8b868dc7
-#algunas definiciones útiles
-begin
-	using Latexify  # si no lo tenéis hay que instalarlo
-    Base.show(io::IO, ::MIME"text/html", x::Symbolics.Num) = print(io, latexify(x))
-    Base.show(io::IO, ::MIME"text/html", x::Symbolics.Symbolic) = print(io, latexify(x))
-    Base.show(io::IO, ::MIME"text/html", x::Symbolics.Vector{Equation}) = print(io, latexify(x))
-    Base.show(io::IO, ::MIME"text/html", x::Symbolics.AbstractArray{Num}) = print(io, latexify(x))
-	
-	diff(f,variable) = expand_derivatives(Symbolics.derivative(f,variable))
-	subs(expr,dict) = substitute(expr, dict)
-	expand(x) = simplify(x;polynorm=true) #En ciertas versiones es expand = true
-	solve_for(ecuacion,variable) = Symbolics.solve_for(ecuacion, variable)
-	jacobian(f,x) = Symbolics.jacobian(f,x)
-end
-
 
 # ╔═╡ 183a6460-a9ca-11eb-340e-872e08f29a9e
 using LinearAlgebra
@@ -72,9 +63,30 @@ La idea es "derivar hasta que sale u"
 # ╔═╡ 6831eb02-023b-11eb-0842-fbe8f8eb8937
 md"Vamos a usar cálculo simbólico"
 
+# ╔═╡ 5fe018a0-023b-11eb-1e69-d59b562edc9b
+#using Symbolics
+#alternativamente también se puede usar SymEngine pero hay que definir el jacobiano a mano
+
+# ╔═╡ 1c0442a0-a993-11eb-1b2d-55eb8b868dc7
+#algunas definiciones útiles
+begin
+	#using Latexify  # si no lo tenéis hay que instalarlo
+    #Base.show(io::IO, ::MIME"text/html", x::Symbolics.Num) = print(io, latexify(x))
+    #Base.show(io::IO, ::MIME"text/html", x::Symbolics.Symbolic) = print(io, latexify(x))
+    #Base.show(io::IO, ::MIME"text/html", x::Symbolics.Vector{Equation}) = print(io, latexify(x))
+    #Base.show(io::IO, ::MIME"text/html", x::Symbolics.AbstractArray{Num}) = print(io, latexify(x))
+	
+	diff(f,variable) = expand_derivatives(Symbolics.derivative(f,variable))
+	subs(expr,dict) = substitute(expr, dict)
+	expand(x) = simplify(x;polynorm=true) #En ciertas versiones es expand = true
+	solve_for(ecuacion,variable) = Symbolics.solve_for(ecuacion, variable)
+	jacobian(f,x) = Symbolics.jacobian(f,x)
+end
+
+
 # ╔═╡ 3ff84c30-0248-11eb-33ba-f99304ee8672
 begin
-	D=x1=x2=t=u=J=M=g=L=0  #eso es cosa de pluto y las macros (si no no es necesario)
+	#D=x1=x2=t=u=J=M=g=L=0  #eso es cosa de pluto y las macros (si no no es necesario)
 	@variables D x1 x2 t u J M g L  # =symbols("D,x1,x2,t,u,J, M, g, L")
 end
 
@@ -135,7 +147,7 @@ $$y^{(\gamma)}=v$$
 # ╔═╡ 65ad8360-a99a-11eb-3764-aded1015107e
 begin
 	#definir v
-	v=0
+	#v=0
 	@variables v
 end
 
@@ -144,6 +156,9 @@ ecuación=der~v
 
 # ╔═╡ 6e31c180-a9c8-11eb-3893-f55415fa4fad
 uc=solve_for(ecuación,u)
+
+# ╔═╡ 478bc500-2c06-4508-8794-0d99fee916df
+test=Symbolics.solve_for(ecuación,u)
 
 # ╔═╡ 561e07e2-0250-11eb-1380-4b5dfa861cd6
 md"vamos a ver que lo hemos hecho bien"
@@ -344,6 +359,31 @@ function derivadas_ejemplo1(x,p,t)
 	dx=[dx1 dx2] #no hace falta return dx
 end
 
+# ╔═╡ 2a98e6e0-a227-11eb-026a-bb5831f344bb
+let
+	x0 = [0.1 0.1]
+	parametros=[1 1 1 1] # una g un poco rara ¿no?
+	tspan = (0.0,10.0)
+	prob = ODEProblem(derivadas_ejemplo1,x0,tspan,parametros);
+	sol = solve(prob,Tsit5());
+	
+	# Salida y referencia
+	fig1=plot(sol,vars=(0,1), xaxis=L"t",yaxis=L"y(t)",label=L"y(t)")
+	#referencia, x1 no se usa para nada pero espera que le pases algún estado
+	fig1=plot!(fig1,sol,vars=( (t,x1)->(t,referencia_1(t)[1]) , 0, 1 ), 					label=L"y_r", linestyle=[:dot], linewidth=2) 
+		
+	#Pinto los estados, si no quiero etiquetasp1=
+	fig2=plot(sol, xaxis="t",yaxis=L"x(t)", label=:none)
+	#fig2=plot(sol,vars=(0,1), xaxis=L"t",yaxis=L"x(t)",label=L"x_1")
+	#fig2=plot!(sol,vars=(0,2), ,label=L"x_2")
+	    
+	#Señal de control, u no se guarda, hay que recalcularlo
+	fig3=plot(sol, vars=((t,x1,x2)->(t,control_1([x1,x2],parametros,t)),0, 1, 2),
+		    xaxis=L"t",yaxis=L"u(t)",legend=false)
+	l = @layout [a ; b ; c]
+	plot(fig1,fig2,fig3, layout=l)
+end
+
 # ╔═╡ 922bccde-022d-11eb-17f2-270aae61f923
 md"""# Dinámica cero
 El ejemplo anterior funciona muy bien por dos motivos:
@@ -381,31 +421,6 @@ begin
 	#estados y salida
 	xb=[x1;x2;x3]
 	yb=x3
-end
-
-# ╔═╡ 2a98e6e0-a227-11eb-026a-bb5831f344bb
-let
-	x0 = [0.1 0.1]
-	parametros=[1 1 1 1] # una g un poco rara ¿no?
-	tspan = (0.0,10.0)
-	prob = ODEProblem(derivadas_ejemplo1,x0,tspan,parametros);
-	sol = solve(prob,Tsit5());
-	
-	# Salida y referencia
-	fig1=plot(sol,vars=(0,1), xaxis=L"t",yaxis=L"y(t)",label=L"y(t)")
-	#referencia, x1 no se usa para nada pero espera que le pases algún estado
-	fig1=plot!(fig1,sol,vars=( (t,x1)->(t,referencia_1(t)[1]) , 0, 1 ), 					label=L"y_r", linestyle=[:dot], linewidth=2) 
-		
-	#Pinto los estados, si no quiero etiquetasp1=
-	fig2=plot(sol, xaxis="t",yaxis=L"x(t)", label=:none)
-	#fig2=plot(sol,vars=(0,1), xaxis=L"t",yaxis=L"x(t)",label=L"x_1")
-	#fig2=plot!(sol,vars=(0,2), ,label=L"x_2")
-	    
-	#Señal de control, u no se guarda, hay que recalcularlo
-	fig3=plot(sol, vars=((t,x1,x2)->(t,control_1([x1,x2],parametros,t)),0, 1, 2),
-		    xaxis=L"t",yaxis=L"u(t)",legend=false)
-	l = @layout [a ; b ; c]
-	plot(fig1,fig2,fig3, layout=l)
 end
 
 # ╔═╡ 0610d2ee-0958-11eb-2490-19e0efcd3996
@@ -539,8 +554,9 @@ md"""Para comprobar la teoría ponemos la referenica a cero, cuando la salida se
 # ╟─2a98e6e0-a227-11eb-026a-bb5831f344bb
 # ╟─e3e9d0a0-022c-11eb-04ba-97dcb9ba908a
 # ╟─6831eb02-023b-11eb-0842-fbe8f8eb8937
+# ╠═a2fa5231-07fe-448c-bbcb-a42bf790e7bc
 # ╠═5fe018a0-023b-11eb-1e69-d59b562edc9b
-# ╠═1c0442a0-a993-11eb-1b2d-55eb8b868dc7
+# ╟─1c0442a0-a993-11eb-1b2d-55eb8b868dc7
 # ╠═3ff84c30-0248-11eb-33ba-f99304ee8672
 # ╠═6d535e50-a99a-11eb-08c1-4d98301e53b3
 # ╠═5525d1a0-a9c7-11eb-1de0-1700c9c20460
@@ -554,6 +570,7 @@ md"""Para comprobar la teoría ponemos la referenica a cero, cuando la salida se
 # ╠═65ad8360-a99a-11eb-3764-aded1015107e
 # ╠═4b753d20-a9c8-11eb-320a-d58ec5e3c431
 # ╠═6e31c180-a9c8-11eb-3893-f55415fa4fad
+# ╠═478bc500-2c06-4508-8794-0d99fee916df
 # ╟─561e07e2-0250-11eb-1380-4b5dfa861cd6
 # ╠═64db3f40-a99a-11eb-01df-d3ca4846ca33
 # ╟─de497f50-0250-11eb-028e-ffe56cf1ba45
