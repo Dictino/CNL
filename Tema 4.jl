@@ -22,17 +22,11 @@ begin
     Pkg.add([
         Pkg.PackageSpec(name="Symbolics", version="3.0"),
     ])
-    using Symbolics
+    using Symbolics #alternativamente también se puede usar SymEngine pero hay que definir el jacobiano a mano
+	using OrdinaryDiffEq
+	using Plots
+	using LaTeXStrings #rotulos de las figuras bonitos
 end
-
-# ╔═╡ f493fdb0-022f-11eb-34a6-4b133c23a71a
-using OrdinaryDiffEq
-
-# ╔═╡ c803fe10-0231-11eb-1f84-dbe43fd97eb4
-using Plots
-
-# ╔═╡ be8523c0-0239-11eb-0439-592e370c5618
-using LaTeXStrings #rotulos de las figuras bonitos
 
 # ╔═╡ 183a6460-a9ca-11eb-340e-872e08f29a9e
 using LinearAlgebra
@@ -62,10 +56,6 @@ La idea es "derivar hasta que sale u"
 
 # ╔═╡ 6831eb02-023b-11eb-0842-fbe8f8eb8937
 md"Vamos a usar cálculo simbólico"
-
-# ╔═╡ 5fe018a0-023b-11eb-1e69-d59b562edc9b
-#using Symbolics
-#alternativamente también se puede usar SymEngine pero hay que definir el jacobiano a mano
 
 # ╔═╡ 1c0442a0-a993-11eb-1b2d-55eb8b868dc7
 #algunas definiciones útiles
@@ -547,15 +537,11 @@ md"""Para comprobar la teoría ponemos la referenica a cero, cuando la salida se
 # ╟─6b1fd530-0a28-11eb-1142-47afd1798c3e
 # ╠═85c0d350-022e-11eb-0873-c118ffde014c
 # ╠═506a20d0-026f-11eb-2bde-f94724bd27f3
-# ╠═f493fdb0-022f-11eb-34a6-4b133c23a71a
-# ╠═c803fe10-0231-11eb-1f84-dbe43fd97eb4
-# ╠═be8523c0-0239-11eb-0439-592e370c5618
 # ╟─85c03440-0274-11eb-3c81-514259334750
 # ╟─2a98e6e0-a227-11eb-026a-bb5831f344bb
 # ╟─e3e9d0a0-022c-11eb-04ba-97dcb9ba908a
 # ╟─6831eb02-023b-11eb-0842-fbe8f8eb8937
 # ╠═a2fa5231-07fe-448c-bbcb-a42bf790e7bc
-# ╠═5fe018a0-023b-11eb-1e69-d59b562edc9b
 # ╟─1c0442a0-a993-11eb-1b2d-55eb8b868dc7
 # ╠═3ff84c30-0248-11eb-33ba-f99304ee8672
 # ╠═6d535e50-a99a-11eb-08c1-4d98301e53b3
