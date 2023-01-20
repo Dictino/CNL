@@ -46,9 +46,15 @@ Ojo que binder **no es persistente**, si hacéis un cambio y queréis guardarlo 
 
 ¡A disfrutarlo!
 
-Una guía para conocer la sintaxis básica de Julia es el siguiente [tutorial en castellano](https://hedero.webs.upv.es/julia-basico/), o también [estos en inglés](https://julialang.org/learning/tutorials/) (el primero "From zero to Julia!" merece bastante la pena).
+## Primeros pasos con Julia
 
-Un recurso fundamental es la [documentación](https://docs.julialang.org/en/v1/) que es muy completa y exausiva y si se quiere concoer el lenguaje en profundidad el manual es de obligada lectura, para los que dominéis otros lenguajes puede ser interesante la siguiente [sección](https://docs.julialang.org/en/v1/manual/noteworthy-differences/).
+En los vídeos de la asignatura os explciaremos todo lo que necesitais conocer de la sintaxis del lenguaje pero para ampliar conocimientos o resolver dudas es bueno contar con los siguietnes recursos:
+
+En primer lugar una guía para conocer la sintaxis básica de Julia es la siguiente [tutorial en castellano](https://hedero.webs.upv.es/julia-basico/), o también [estos en inglés](https://julialang.org/learning/tutorials/) (el primero "From zero to Julia!" merece bastante la pena).
+
+Un recurso fundamental para la consulta y también para leer secciones completas ya que es bastante legible para ser un manual es la [documentación oficial](https://docs.julialang.org/en/v1/) que es muy completa y exausiva y si se quiere concoer el lenguaje en profundidad el manual es de obligada lectura.
+
+Para los que dominéis otros lenguajes puede ser interesante la siguiente [sección](https://docs.julialang.org/en/v1/manual/noteworthy-differences/) donde explica las diferencias con otros lenguajes de amplio uso.
 
 Finalmente cada paquete tiene su propia documentación que puede consultarse buscando en google "julia paquete_que_sea.jl" por ejemplo "julia differentialequations.jl" en el primer resultado lleva directamente a la [documentación](https://docs.sciml.ai/DiffEqDocs/stable/) de dicho paquete.
  
