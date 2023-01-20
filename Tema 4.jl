@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.18.1
+# v0.19.18
 
 using Markdown
 using InteractiveUtils
@@ -17,22 +17,12 @@ end
 # ╔═╡ a2fa5231-07fe-448c-bbcb-a42bf790e7bc
 begin
     import Pkg
-    # activate a temporary environment
-    Pkg.activate(mktempdir())
-    Pkg.add([
-        Pkg.PackageSpec(name="Symbolics", version="3.0"),
-    ])
-    using Symbolics #alternativamente también se puede usar SymEngine pero hay que definir el jacobiano a mano
-	using OrdinaryDiffEq
-	using Plots
-	using LaTeXStrings #rotulos de las figuras bonitos
+	  Pkg.activate(@__DIR__)
+	using OrdinaryDiffEq, Plots, LaTeXStrings, PlutoUI, Symbolics #alternativamente también se puede usar SymEngine pero hay que definir el jacobiano a mano
 end
 
 # ╔═╡ 183a6460-a9ca-11eb-340e-872e08f29a9e
 using LinearAlgebra
-
-# ╔═╡ c900ad60-095f-11eb-3d18-9f187abdb9b3
-using PlutoUI
 
 # ╔═╡ 5c4af6e0-022e-11eb-152f-2153b9b672c1
 md"""# Ejemplos de sistemas a controlar 
@@ -42,9 +32,6 @@ Primer ejemplo
 $$J \ddot \theta + MgLsin(\theta)=u$$
 
 """
-
-# ╔═╡ 6b1fd530-0a28-11eb-1142-47afd1798c3e
-html"<button onclick=present()>Present</button>"
 
 # ╔═╡ 85c03440-0274-11eb-3c81-514259334750
 md"## Simulamos y pintamos"
@@ -66,12 +53,25 @@ begin
     #Base.show(io::IO, ::MIME"text/html", x::Symbolics.Vector{Equation}) = print(io, latexify(x))
     #Base.show(io::IO, ::MIME"text/html", x::Symbolics.AbstractArray{Num}) = print(io, latexify(x))
 	
-	diff(f,variable) = expand_derivatives(Symbolics.derivative(f,variable))
+	Base.diff(f,variable) = expand_derivatives(Symbolics.derivative(f,variable))
 	subs(expr,dict) = substitute(expr, dict)
-	expand(x) = simplify(x;polynorm=true) #En ciertas versiones es expand = true
-	solve_for(ecuacion,variable) = Symbolics.solve_for(ecuacion, variable)
+	expand(x) = simplify(x;expand=true) #En ciertas versiones es expand = true
+	#solve_for(ecuacion,variable) = Symbolics.solve_for(ecuacion, variable)
+	#Han roto symbolics lo programo a mano
+	function solve_for(ecuación,variable)
+	    ecuación2=Num(ecuación.lhs-ecuación.rhs)
+        A=diff(ecuación2,variable)
+	    if(diff(A,variable)!=0)
+		    error("La ecuación no es lineal")
+	    end
+	    B=ecuación2-A*variable
+	    solución=simplify(expand(-B/A))
+    end
 	jacobian(f,x) = Symbolics.jacobian(f,x)
+	
+	md"Definimos las funiones habituales..."
 end
+
 
 
 # ╔═╡ 3ff84c30-0248-11eb-33ba-f99304ee8672
@@ -148,7 +148,7 @@ ecuación=der~v
 uc=solve_for(ecuación,u)
 
 # ╔═╡ 478bc500-2c06-4508-8794-0d99fee916df
-test=Symbolics.solve_for(ecuación,u)
+test=solve_for(ecuación,u)
 
 # ╔═╡ 561e07e2-0250-11eb-1380-4b5dfa861cd6
 md"vamos a ver que lo hemos hecho bien"
@@ -177,7 +177,7 @@ z1=y
 z2=derivada(y,x,dx)
 
 # ╔═╡ 0db8c9c0-0252-11eb-199c-2d69997c6769
-md"veamos que lo hemos hecho bien y la derivada es la corecta"
+md"veamos que lo hemos hecho bien y la derivada es la corecta (ha de salir v)"
 
 # ╔═╡ dd56c0c2-a99a-11eb-0c87-8f8e2c6321a8
 expand(subs(derivada(z2,x,dx), u=>uc))
@@ -240,7 +240,6 @@ $$(s-p_1)(s-p_2)...(s-p_{\gamma})$$
 begin
 	#expandir (s-p1)*(s-p2)) y comparar con lo deseado
 	p1=p2=-1
-	s=0
 	@variables s
 	expand((s-p1)*(s-p2))
 end
@@ -357,12 +356,12 @@ let
 	prob = ODEProblem(derivadas_ejemplo1,x0,tspan,parametros);
 	sol = solve(prob,Tsit5());
 	
-	# Salida y referencia
+	# Salida y referencia vars=(0,1) significa pintar variable 1 (el x1) vs variable 0 (el tiempo), cambialo para mostrar otras variables si es necesario
 	fig1=plot(sol,vars=(0,1), xaxis=L"t",yaxis=L"y(t)",label=L"y(t)")
 	#referencia, x1 no se usa para nada pero espera que le pases algún estado
-	fig1=plot!(fig1,sol,vars=( (t,x1)->(t,referencia_1(t)[1]) , 0, 1 ), 					label=L"y_r", linestyle=[:dot], linewidth=2) 
+	fig1=plot!(fig1,sol,vars=( (t,x1)->(t,referencia_1(t)[1]) , 0, 1 ), 					label=L"y_r", linestyle=:dot, linewidth=2) 
 		
-	#Pinto los estados, si no quiero etiquetasp1=
+	#Pinto los estados, si no quiero etiqueta
 	fig2=plot(sol, xaxis="t",yaxis=L"x(t)", label=:none)
 	#fig2=plot(sol,vars=(0,1), xaxis=L"t",yaxis=L"x(t)",label=L"x_1")
 	#fig2=plot!(sol,vars=(0,2), ,label=L"x_2")
@@ -371,7 +370,8 @@ let
 	fig3=plot(sol, vars=((t,x1,x2)->(t,control_1([x1,x2],parametros,t)),0, 1, 2),
 		    xaxis=L"t",yaxis=L"u(t)",legend=false)
 	l = @layout [a ; b ; c]
-	plot(fig1,fig2,fig3, layout=l)
+	figura=plot(fig1,fig2,fig3, layout=l)
+	#display(figura) si se usa fuera de pluto hay que hacer display
 end
 
 # ╔═╡ 922bccde-022d-11eb-17f2-270aae61f923
@@ -477,6 +477,9 @@ Pero si cambiamos a=1 por a=-1 ¿Qué pasaría?"""
 # ╔═╡ 062714d0-0a2e-11eb-073f-6bd47b020c54
 	constante_a=1
 
+# ╔═╡ c900ad60-095f-11eb-3d18-9f187abdb9b3
+
+
 # ╔═╡ 667f8b70-095f-11eb-08a8-0f49a920e3cb
 @bind tf Slider(10:100)
 
@@ -488,9 +491,9 @@ let
 	prob = ODEProblem(derivadas_ejemplo2,x0,tspan,parametros);
 	sol = solve(prob,Tsit5());
 	
-	# Salida y referencia
+	# Salida y referencia vars=(0,3) significa pintar x3 frente a t
 	fig1=plot(sol,vars=(0,3), xaxis=L"t",yaxis=L"y(t)",label=L"y(t)")
-	fig1=plot!(fig1,sol,vars=( (t,x1)->(t,referencia_2(t)[1]) , 0, 1 ), 					label=L"y_r", linestyle=[:dot], linewidth=2) 
+	fig1=plot!(fig1,sol,vars=( (t,x1)->(t,referencia_2(t)[1]) , 0, 1 ), 					label=L"y_r", linestyle=:dot, linewidth=2) 
 		
 	fig2=plot(sol, xaxis="t",yaxis=L"x(t)", label=:none)
 	#fig2=plot(sol,vars=(0,1), xaxis=L"t",yaxis=L"x(t)",label=L"x_1")
@@ -501,7 +504,8 @@ let
 	fig3=plot(sol, vars=((t,x1,x2, x3)->(t,control_2([x1,x2,x3],parametros,t)),0, 1, 2, 3),
 		    xaxis=L"t",yaxis=L"u(t)",legend=false)
 	l = @layout [a ; b ; c]
-	plot(fig1,fig2,fig3, layout=l)
+	figura=plot(fig1,fig2,fig3, layout=l)
+	#display(figura) si se usa fuera de pluto hay que hacer display
 end
 
 # ╔═╡ 1f8be93e-0962-11eb-14f4-73a59ba80a72
@@ -534,7 +538,6 @@ md"""Para comprobar la teoría ponemos la referenica a cero, cuando la salida se
 
 # ╔═╡ Cell order:
 # ╟─5c4af6e0-022e-11eb-152f-2153b9b672c1
-# ╟─6b1fd530-0a28-11eb-1142-47afd1798c3e
 # ╠═85c0d350-022e-11eb-0873-c118ffde014c
 # ╠═506a20d0-026f-11eb-2bde-f94724bd27f3
 # ╟─85c03440-0274-11eb-3c81-514259334750
@@ -598,6 +601,6 @@ md"""Para comprobar la teoría ponemos la referenica a cero, cuando la salida se
 # ╠═062714d0-0a2e-11eb-073f-6bd47b020c54
 # ╠═c900ad60-095f-11eb-3d18-9f187abdb9b3
 # ╠═667f8b70-095f-11eb-08a8-0f49a920e3cb
-# ╟─b117ab50-04cc-11eb-1580-fdafb3c3213b
+# ╠═b117ab50-04cc-11eb-1580-fdafb3c3213b
 # ╟─1f8be93e-0962-11eb-14f4-73a59ba80a72
 # ╟─41656a80-0a7c-11eb-1070-db649ce73728

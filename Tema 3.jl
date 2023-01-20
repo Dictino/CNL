@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.21
+# v0.19.9
 
 using Markdown
 using InteractiveUtils
@@ -7,17 +7,19 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : missing
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
 end
 
-# ╔═╡ 1968a1b0-9090-11eb-3424-ad2150889fd1
-using PlutoUI
-
 # ╔═╡ c09c0e20-d8be-11ea-11be-0966527e6f2d
-using Plots
+begin
+    import Pkg
+	  Pkg.activate(@__DIR__)
+	using Plots, PlutoUI
+end
 
 # ╔═╡ b711bf40-c912-11eb-120d-1bb53ca25d17
 using ControlSystems
@@ -82,6 +84,7 @@ end
 	title!("""La respuesta en frecuencia ha de rodear al punto 
 	en sentido antihorario tantas veces como polos inestables
 	hay, K=$(K)""")
+	#para usar fuera de pluto es necesario hacer display()
 end
 
 # ╔═╡ 490c8852-909f-11eb-2522-ad23744ce9d8
@@ -118,64 +121,6 @@ md"""# Criterio del círculo
 
 **Cada caso** de los que se puede usar da **un rango** posible de ganancias
 """
-
-# ╔═╡ 00b900b0-d8c6-11ea-0e42-0f4bfaf17fd2
-md"## Planta estable"
-
-# ╔═╡ ed754f20-db56-11ea-02fa-3581c244dcbd
-md"""### Caso A
-$$0=k_1<k_2$$ 
-La recta ha de quedar a la izquierda
-"""
-
-# ╔═╡ 9975e6e0-db57-11ea-30e1-3ffbd104839c
-K_maxA=100
-
-# ╔═╡ adee0ba0-d988-11ea-19c7-e324f1f86031
-@bind k2a Slider((0:0.001:1)*K_maxA,default=1.0)
-
-# ╔═╡ 839b4c72-9092-11eb-2237-1dc284e3041e
-k2a
-
-# ╔═╡ 2b1196f0-90dc-11eb-2e20-89a61fcb1498
-md"Este caso ha sido más conservador que las conjeturas $[0, \infty)$"
-
-# ╔═╡ b47374ee-db55-11ea-2b8f-5b38e3a2c5a0
-md"""### Caso B
-$$k_1<0<k_2$$ 
-El círculo ha de rodear la respuesta en frecuencia
-"""
-
-# ╔═╡ bd8ef6f0-dbb8-11ea-3fe0-3b17ccdb1fcd
-begin
-	K_maxB1=10
-	K_maxB2=100
-end
-
-# ╔═╡ fe58cf80-dbb8-11ea-1c6c-93fef94ed79c
-@bind k1b Slider((-1:0.001:0)*K_maxB1,default=-1.0)
-
-# ╔═╡ d2de7080-dbb8-11ea-1d7e-11b40cd2ce8d
-@bind k2b Slider((0:0.001:1)*K_maxB2,default=1.0)
-
-# ╔═╡ d3077b80-9092-11eb-0f8b-85c6edde81f5
-(k1=k1b,k2=k2b)
-
-# ╔═╡ 65071560-90dc-11eb-24f3-3d03b8461507
-md"Este caso es igual que las conjeturas AK es decir $[-\frac{10}{3}, \infty)$ "
-
-# ╔═╡ 1ae51110-d98c-11ea-3b02-1ddccacadb56
-md"## Planta inestable
-En este caso **la planta de antes no nos sirve** ya que era estable, usamos estra otra
-
-$H_2=\frac{s+3}{(s+5)(s-2)}$
-
-Que tiene **un** polo inestable
-
-"
-
-# ╔═╡ 8054e0c0-90a2-11eb-20fb-ad26bded4db5
-H2(s)=(s+3)/(s^2+3s-10)
 
 # ╔═╡ 9ca66610-d985-11ea-0426-13ef5f785091
 function circulo(H,K1,K2,caso)	
@@ -255,13 +200,72 @@ function circulo(H,K1,K2,caso)
 	    plot!(circunferencia,label="circulo")
 		title!(titulo)
 	end
+	#idem aquí, para usar fuera de pluto hay que hacer display()
 end
+
+# ╔═╡ 00b900b0-d8c6-11ea-0e42-0f4bfaf17fd2
+md"## Planta estable"
+
+# ╔═╡ ed754f20-db56-11ea-02fa-3581c244dcbd
+md"""### Caso A
+$$0=k_1<k_2$$ 
+La recta ha de quedar a la izquierda
+"""
+
+# ╔═╡ 9975e6e0-db57-11ea-30e1-3ffbd104839c
+K_maxA=100
+
+# ╔═╡ adee0ba0-d988-11ea-19c7-e324f1f86031
+@bind k2a Slider((0:0.001:1)*K_maxA,default=1.0)
+
+# ╔═╡ 839b4c72-9092-11eb-2237-1dc284e3041e
+k2a
 
 # ╔═╡ b642eb40-d988-11ea-26a4-374a74d5dc08
 circulo(H1,0,k2a,'A')
 
+# ╔═╡ 2b1196f0-90dc-11eb-2e20-89a61fcb1498
+md"Este caso ha sido más conservador que las conjeturas $[0, \infty)$"
+
+# ╔═╡ b47374ee-db55-11ea-2b8f-5b38e3a2c5a0
+md"""### Caso B
+$$k_1<0<k_2$$ 
+El círculo ha de rodear la respuesta en frecuencia
+"""
+
+# ╔═╡ bd8ef6f0-dbb8-11ea-3fe0-3b17ccdb1fcd
+begin
+	K_maxB1=10
+	K_maxB2=100
+end
+
+# ╔═╡ fe58cf80-dbb8-11ea-1c6c-93fef94ed79c
+@bind k1b Slider((-1:0.001:0)*K_maxB1,default=-1.0)
+
+# ╔═╡ d2de7080-dbb8-11ea-1d7e-11b40cd2ce8d
+@bind k2b Slider((0:0.001:1)*K_maxB2,default=1.0)
+
+# ╔═╡ d3077b80-9092-11eb-0f8b-85c6edde81f5
+(k1=k1b,k2=k2b)
+
 # ╔═╡ 9d833cf0-db03-11ea-3b28-33343306f4dc
 circulo(H1,k1b,k2b,'B')
+
+# ╔═╡ 65071560-90dc-11eb-24f3-3d03b8461507
+md"Este caso es igual que las conjeturas AK es decir $[-\frac{10}{3}, \infty)$ "
+
+# ╔═╡ 1ae51110-d98c-11ea-3b02-1ddccacadb56
+md"## Planta inestable
+En este caso **la planta de antes no nos sirve** ya que era estable, usamos estra otra
+
+$H_2=\frac{s+3}{(s+5)(s-2)}$
+
+Que tiene **un** polo inestable
+
+"
+
+# ╔═╡ 8054e0c0-90a2-11eb-20fb-ad26bded4db5
+H2(s)=(s+3)/(s^2+3s-10)
 
 # ╔═╡ 7697fac0-90a4-11eb-1687-5ff2a5cf415d
 md"Primero veamos que dicen las conjeturas"
@@ -350,7 +354,7 @@ md"Como ejemplo podemos usar la planta H1 añadiendo un polo en el origen:
 $H_3=\frac{s+3}{s(s+5)(s+2)}$"
 
 # ╔═╡ b7044bc0-9880-11eb-31b6-b1578086897a
-H3(s)=H1(s)/s
+H3(s)=H1(s)/s #OJO, cuando useis esto poner VUESTRA PLANTA no la misma del círculo dividida por s...
 
 # ╔═╡ bc4b38a0-c913-11eb-2eb9-25b5e6468a61
 md"""### Primero a ver que nos dicen las cojneturas AK
@@ -538,9 +542,6 @@ begin
 	plot(fig1,fig2, layout=l)
 end
 
-# ╔═╡ 0eae14a0-c923-11eb-115a-616a0e34d031
-max(1,NaN)
-
 # ╔═╡ d6fd4a4e-90e0-11eb-34bf-ab3bb29cc905
 md"Jugando un poco es fácil ver que es  $[-\frac{10}{3}, \infty)$
 Para verlo analíticamente habría que hacer
@@ -598,7 +599,6 @@ end
 # ╟─6b0b4680-9095-11eb-3afe-9b792355080b
 # ╟─9999f2c0-dbdd-11ea-04a5-dd56cf1eae5c
 # ╠═4628f590-dbe3-11ea-2a7a-83cabda49ee7
-# ╠═1968a1b0-9090-11eb-3424-ad2150889fd1
 # ╠═490c8852-909f-11eb-2522-ad23744ce9d8
 # ╠═203ea980-9090-11eb-25f8-8ff76ab5262a
 # ╠═c09c0e20-d8be-11ea-11be-0966527e6f2d
@@ -674,7 +674,6 @@ end
 # ╠═3387bd60-90e0-11eb-1963-7dfc892de25c
 # ╠═a134fad0-90e0-11eb-1145-df3b4d6da246
 # ╟─041d31e0-90b3-11eb-1d07-c3b6bb15e4ae
-# ╠═0eae14a0-c923-11eb-115a-616a0e34d031
 # ╟─d6fd4a4e-90e0-11eb-34bf-ab3bb29cc905
 # ╠═af179aae-90a7-11eb-2a7b-1b96a28c8ebc
 # ╠═cfbeb720-90a8-11eb-1ac2-3bda60b2285c

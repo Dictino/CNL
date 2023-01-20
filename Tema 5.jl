@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.21
+# v0.19.9
 
 using Markdown
 using InteractiveUtils
@@ -7,24 +7,23 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : missing
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
 end
 
 # ╔═╡ b5a8675e-0e2a-11eb-1787-55285590d7de
-using Plots
+begin
+    import Pkg
+	  Pkg.activate(@__DIR__)
+	using Plots, PlutoUI, SymEngine 
+#hay muchos paquete simbólicos, el más completo (límites integrales, sustiuciones...) es SymPy, Symbolics es nuevo y en desarrollo y SymEngine es simple y suficiente para lo que vamos a hacer en este tema, usad el que más os convenga
+end
 
 # ╔═╡ bcd20d70-0e2a-11eb-34c1-5f49700df9cd
 using LaTeXStrings
-
-# ╔═╡ 55991350-0e2b-11eb-3419-0f9f9ac0293f
-using PlutoUI
-
-# ╔═╡ 0cbfa5d0-2506-11eb-1485-7733b85a975b
-using SymEngine 
-#hay muchos paquete simbólicos, el más completo (límites integrales, sustiuciones...) es SymPy, Symbolics es nuevo y en desarrollo y SymEngine es simple y suficiente para lo que vamos a hacer
 
 # ╔═╡ 5aded872-b8b4-11eb-0277-93d61bffe2fd
 md"# Tema 5 Control en modo deslizante"
@@ -78,6 +77,7 @@ Donde hemos tomado $\epsilon=0.1$
 # ╔═╡ 94294500-0e2a-11eb-3a25-617242dfe932
 function planta_ejemplo1(x,u,t,p)
 	a=p[1]#parámetro desconocido
+	#OJO no hagáis a=p aunque haya un paámetro no es lo mismo 1 que [1]
 	dx=sin(t)+a*cos(x)+u
 end
 
@@ -89,6 +89,21 @@ control_1a(x,t,p)=-2*sign(x)
 
 # ╔═╡ 6b48fc60-0e2b-11eb-1ad1-075f865e4c78
 @bind a1 Slider(0.5:0.01:0.9)
+
+# ╔═╡ ff0eafe0-0e2a-11eb-3e1c-5dd70c43c3c1
+let
+	Δt=0.001
+	tf=2
+	x0=x1_0
+	parametros=[a1]
+	x,u,t=simular(x0,planta_ejemplo1,control_1a,parametros,tf,Δt)
+	
+	fig1=plot(t,x, xaxis=L"t",yaxis=L"x(t)",label=:none)
+	title!(fig1,"a=$a1")
+	fig2=plot(t,u, xaxis=L"t",yaxis=L"u(t)",legend=false)
+	l = @layout [a ; b]
+	plot(fig1,fig2, layout=l)
+end
 
 # ╔═╡ f77e1fc0-0e2c-11eb-0051-d7eee614b171
 md"""# Hemos hecho *trampa*, ¿Dónde está el control equivalente?
@@ -110,6 +125,22 @@ function control_1b(x,t,p)
 		u=1000000 #NO es el control equivalente es para ver que sucede ;)
 	end	
 	return u
+end
+
+# ╔═╡ 155f6de0-25c6-11eb-3a8e-851538372b3e
+let
+	Δt=0.001
+	tf=2
+	x0=x1_0
+	parametros=[a1]
+	x,u,t=simular(x0,planta_ejemplo1,control_1b,parametros,tf,Δt)
+	
+	fig1=plot(t,x, xaxis=L"t",yaxis=L"x(t)",label=:none)
+	fig1=hline!([0],line=:dot,label=:none)
+	title!(fig1,"a=$a1")
+	fig2=plot(t,u, xaxis=L"t",yaxis=L"u(t)",legend=false)
+	l = @layout [a ; b]
+	plot(fig1,fig2, layout=l)
 end
 
 # ╔═╡ 7cc77a40-0efb-11eb-145d-4b535e701cf8
@@ -174,101 +205,6 @@ md"Veamos que efecto tiene camniar el signo por su vesion continua"
 # ╔═╡ 24a65e50-2501-11eb-2363-67d7e5bcb405
 control_1c(x,t,p)=-2*tanh(x/p[2])
 
-# ╔═╡ e01fcbe0-2500-11eb-3b94-a7662624c5ed
-md"""## Entonces lo mejor es disminuir $\epsilon$ todo lo posible ¿No?
-
-*No exactamente*, en la práctica tiene sus problemas, por ejemplo si la medida del estado es ruidosa...
-Veámoslo:
-"""
-
-# ╔═╡ 16e8dac2-25cb-11eb-33d1-a95dc487b34d
-function control_1d(x,t,p)
-	_,ϵ,nivel_ruido=p
-	ruido=nivel_ruido*2*(rand()-0.5)
-	x_medido=x+ruido
-	u=-2*tanh(x_medido/ϵ)
-end
-
-# ╔═╡ 612d43c0-2506-11eb-3a14-8145b79e349f
-@bind ϵ2 Slider(0.01:0.01:0.2)  
-
-# ╔═╡ d8e35250-25ca-11eb-3d59-b3c6396a4fb1
-@bind nivel_ruido Slider(0:0.01:0.2)  
-
-# ╔═╡ f694c060-2505-11eb-26ef-1fc536e2260d
-md"""# Ejemplo 2 vamos al tracking directamente ☺		
-La estabilización es como el tracking pero con $r=0$, como ya lo vimos en el tema anterior podemos ir más rápido en este.
-
-$\dot x_1=sin(x_1)+x_2$
-
-$\dot x_2=ax_1+bx_2^2+cu$
-
-$ y=x_1 $
-
-con  
-
-$ a \in [-1,7] $,  $ b \in [1,2] $ y $ c \in [1.5,2.8] $
-
-Queremos seguir la referenica $ y_r=sin(t) $
-
-"""
-
-# ╔═╡ 595542f0-25cf-11eb-308d-bb524a624b04
-md"Defimos las función igual que en el tema 4"
-
-# ╔═╡ 41d2207e-25cf-11eb-1cbf-a599e3a5d2fc
-begin
-	function derivada(funcion,variables,derivadas)
-		d=0
-		for i=1:length(variables)
-			d=d+diff(funcion,variables[i])*derivadas[i]
-		end
-		return d
-	end
-	
-	function derivada(f,x,dx,n) #multiple distpach
-		d=f
-		for i=1:n
-			d=derivada(d,x,dx)
-		end
-		return d
-	end
-end
-
-# ╔═╡ 32f2cfd0-2505-11eb-36a3-cdaec55a91cc
-x1,x2,u,a,b,c=symbols("x1,x2,u,a,b,c") #o @vars x1... pero inicializando antes
-
-# ╔═╡ ff0eafe0-0e2a-11eb-3e1c-5dd70c43c3c1
-let
-	Δt=0.001
-	tf=2
-	x0=x1_0
-	parametros=[a1]
-	x,u,t=simular(x0,planta_ejemplo1,control_1a,parametros,tf,Δt)
-	
-	fig1=plot(t,x, xaxis=L"t",yaxis=L"x(t)",label=:none)
-	title!(fig1,"a=$a1")
-	fig2=plot(t,u, xaxis=L"t",yaxis=L"u(t)",legend=false)
-	l = @layout [a ; b]
-	plot(fig1,fig2, layout=l)
-end
-
-# ╔═╡ 155f6de0-25c6-11eb-3a8e-851538372b3e
-let
-	Δt=0.001
-	tf=2
-	x0=x1_0
-	parametros=[a1]
-	x,u,t=simular(x0,planta_ejemplo1,control_1b,parametros,tf,Δt)
-	
-	fig1=plot(t,x, xaxis=L"t",yaxis=L"x(t)",label=:none)
-	fig1=hline!([0],line=:dot,label=:none)
-	title!(fig1,"a=$a1")
-	fig2=plot(t,u, xaxis=L"t",yaxis=L"u(t)",legend=false)
-	l = @layout [a ; b]
-	plot(fig1,fig2, layout=l)
-end
-
 # ╔═╡ e023ea92-2500-11eb-00ff-4f27947f46d4
 let
 	Δt=0.001
@@ -291,6 +227,27 @@ let
 	plot(fig1,fig2, layout=l)
 end
 
+# ╔═╡ e01fcbe0-2500-11eb-3b94-a7662624c5ed
+md"""## Entonces lo mejor es disminuir $\epsilon$ todo lo posible ¿No?
+
+*No exactamente*, en la práctica tiene sus problemas, por ejemplo si la medida del estado es ruidosa...
+Veámoslo:
+"""
+
+# ╔═╡ 16e8dac2-25cb-11eb-33d1-a95dc487b34d
+function control_1d(x,t,p)
+	_,ϵ,nivel_ruido=p
+	ruido=nivel_ruido*2*(rand()-0.5)
+	x_medido=x+ruido
+	u=-2*tanh(x_medido/ϵ)
+end
+
+# ╔═╡ 612d43c0-2506-11eb-3a14-8145b79e349f
+@bind ϵ2 Slider(0.01:0.01:0.2)  
+
+# ╔═╡ d8e35250-25ca-11eb-3d59-b3c6396a4fb1
+@bind nivel_ruido Slider(0:0.01:0.2)  
+
 # ╔═╡ 5a31c47e-2504-11eb-37af-07b3b88360eb
 let
 	Δt=0.001
@@ -312,6 +269,48 @@ let
 	l = @layout [a ; b]
 	plot(fig1,fig2, layout=l)
 end
+
+# ╔═╡ f694c060-2505-11eb-26ef-1fc536e2260d
+md"""# Ejemplo 2 vamos al tracking directamente ☺		
+La estabilización es como el tracking pero con $r=0$, como ya lo vimos en el tema anterior podemos ir más rápido en este.
+
+$\dot x_1=sin(x_1)+x_2$
+
+$\dot x_2=ax_1+bx_2^2+cu$
+
+$y=x_1$
+
+con  $a \in [-1,7]$,  $b \in [1,2]$ y $c \in [1.5,2.8]$
+
+Queremos seguir la referenica $y_r=sin(t)$
+
+"""
+
+# ╔═╡ 595542f0-25cf-11eb-308d-bb524a624b04
+md"Defimos las función con una interfaz igual que en el tema 4"
+
+# ╔═╡ 41d2207e-25cf-11eb-1cbf-a599e3a5d2fc
+#la diferencia es que Symengine tiene impmementada diff directamente
+begin
+	function derivada(funcion,variables,derivadas)
+		d=0
+		for i=1:length(variables)
+			d=d+diff(funcion,variables[i])*derivadas[i]
+		end
+		return d
+	end
+	
+	function derivada(f,x,dx,n) #multiple distpach
+		d=f
+		for i=1:n
+			d=derivada(d,x,dx)
+		end
+		return d
+	end
+end
+
+# ╔═╡ 32f2cfd0-2505-11eb-36a3-cdaec55a91cc
+x1,x2,u,a,b,c=symbols("x1,x2,u,a,b,c") #o @vars x1... pero inicializando antes
 
 # ╔═╡ b1c43a50-25ce-11eb-3478-f13e9174ccc9
 begin
@@ -490,9 +489,6 @@ let
 	
 end
 
-# ╔═╡ 28d56f3e-b8c0-11eb-1329-21f533ccddd9
-
-
 # ╔═╡ Cell order:
 # ╟─5aded872-b8b4-11eb-0277-93d61bffe2fd
 # ╟─f8105520-250b-11eb-1a6b-0129a812bcee
@@ -502,7 +498,6 @@ end
 # ╠═bcd20d70-0e2a-11eb-34c1-5f49700df9cd
 # ╠═94294500-0e2a-11eb-3a25-617242dfe932
 # ╠═1d402de0-0e2b-11eb-10e8-79bdc072ee9b
-# ╠═55991350-0e2b-11eb-3419-0f9f9ac0293f
 # ╠═3b89eed0-0e2b-11eb-3cad-8d86b96accc5
 # ╠═6b48fc60-0e2b-11eb-1ad1-075f865e4c78
 # ╠═ff0eafe0-0e2a-11eb-3e1c-5dd70c43c3c1
@@ -526,8 +521,7 @@ end
 # ╠═612d43c0-2506-11eb-3a14-8145b79e349f
 # ╠═d8e35250-25ca-11eb-3d59-b3c6396a4fb1
 # ╟─f694c060-2505-11eb-26ef-1fc536e2260d
-# ╠═0cbfa5d0-2506-11eb-1485-7733b85a975b
-# ╟─595542f0-25cf-11eb-308d-bb524a624b04
+# ╠═595542f0-25cf-11eb-308d-bb524a624b04
 # ╟─41d2207e-25cf-11eb-1cbf-a599e3a5d2fc
 # ╠═32f2cfd0-2505-11eb-36a3-cdaec55a91cc
 # ╠═b1c43a50-25ce-11eb-3478-f13e9174ccc9
@@ -559,4 +553,3 @@ end
 # ╠═756a3570-2833-11eb-2596-c37768e5a75b
 # ╠═be9d11e0-2833-11eb-1e9f-d3bfc428c893
 # ╠═8bdbadb0-281b-11eb-1786-3bef9aee1d39
-# ╠═28d56f3e-b8c0-11eb-1329-21f533ccddd9

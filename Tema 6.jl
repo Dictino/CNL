@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.21
+# v0.19.9
 
 using Markdown
 using InteractiveUtils
@@ -7,26 +7,19 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : missing
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
 end
 
-# ╔═╡ ad471560-28e9-11eb-16b5-f7025684bc5f
-using SymEngine
-
-# ╔═╡ 3f007f22-4148-11eb-1c8b-9b6e06ccc541
-using OrdinaryDiffEq
-
 # ╔═╡ 42931bc0-4148-11eb-26b9-e5fee42c7580
-using Plots
-
-# ╔═╡ 470b0f50-4148-11eb-3e5a-810c88e0c029
-using LaTeXStrings
-
-# ╔═╡ 30db9be0-5fda-11eb-3899-278be0c6f536
-using PlutoUI
+begin
+    import Pkg
+	  Pkg.activate(@__DIR__)
+	using OrdinaryDiffEq, Plots, LaTeXStrings, PlutoUI, SymEngine
+end
 
 # ╔═╡ 80213b30-28e7-11eb-388d-5501de9711e7
 md"""# Tema 6 Backstepping
@@ -422,8 +415,8 @@ end
 
 # ╔═╡ Cell order:
 # ╟─80213b30-28e7-11eb-388d-5501de9711e7
-# ╠═ad471560-28e9-11eb-16b5-f7025684bc5f
-# ╟─b5d53800-28ea-11eb-1858-4360a7d9fafc
+# ╠═42931bc0-4148-11eb-26b9-e5fee42c7580
+# ╠═b5d53800-28ea-11eb-1858-4360a7d9fafc
 # ╟─bd1a0730-28ea-11eb-2355-c1d9285733c5
 # ╠═2890d210-28ea-11eb-2f16-23af078db24a
 # ╠═e0c749a0-28e9-11eb-2a9d-3b5f6566605a
@@ -488,10 +481,6 @@ end
 # ╟─cc2f0f30-c968-11eb-0814-bbe5107bdd3b
 # ╠═ee6c43b0-c963-11eb-13f9-c51ef0a7f9a2
 # ╟─9e7a974e-c96b-11eb-3a2b-759bf3f51058
-# ╠═3f007f22-4148-11eb-1c8b-9b6e06ccc541
-# ╠═42931bc0-4148-11eb-26b9-e5fee42c7580
-# ╠═470b0f50-4148-11eb-3e5a-810c88e0c029
-# ╠═30db9be0-5fda-11eb-3899-278be0c6f536
 # ╟─49b79790-5fda-11eb-2917-4b055386f9db
 # ╟─8ac8b250-5fda-11eb-2acd-4f317055f0cf
 # ╟─8fbb0600-5fda-11eb-2f43-196140b76f69

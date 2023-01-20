@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.12.21
+# v0.19.18
 
 using Markdown
 using InteractiveUtils
@@ -7,20 +7,19 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : missing
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
 end
 
 # ╔═╡ 02c15be0-defd-11ea-004b-45c4e09aa541
-using Plots
-
-# ╔═╡ 8aeae030-811f-11eb-0075-272d383103ef
-using PlutoUI
-
-# ╔═╡ ba6bf300-8122-11eb-0a3e-2d30a150250c
-using SymEngine
+begin
+    import Pkg
+	  Pkg.activate(@__DIR__)
+	using Plots, PlutoUI, SymEngine
+end
 
 # ╔═╡ 6cbb32f0-d665-11ea-3f24-41cbe1910b80
 using LinearAlgebra
@@ -131,6 +130,7 @@ end
 md"## vamos a empezar a hacer cosas simbólicas (ahora que ya sabemos hacerlas a mano)"
 
 # ╔═╡ d4547220-8121-11eb-1591-ebb8d7742fcc
+#como usamos symengine definimos esto a mano, en próximos temas usaremos symbolics
 function jacobiano(f,variables)
 	N=length(variables)
 	fun=f(variables,[],0)
@@ -206,7 +206,7 @@ begin
 	y3=x3
 	gr()
 	contour(x3, y3, dV2, fill = false, linestyle=:dot)
-	contour!(x3, y3, V2, fill = false)
+	contour!(x3, y3, V2, fill = false, colorbar=false)
 	contour!(x3,y3,V2,levels=[L3],linewidth=3,color=:red)
 	contour!(x3,y3,dV2,levels=[0],linewidth=3,color=:green)
 	plot!(title="L=$(L3)")
@@ -291,7 +291,7 @@ begin
 	x4=-2:0.01:2
 	y4=x3
 	gr()
-	contour(x4, y4, dV1, fill = false)
+	contour(x4, y4, dV1, fill = false,colorbar=false)
 	contour!(x4, y4, V1, fill = false)
 	contour!(x4,y4,V1,levels=[L4],linewidth=3,color=:red)
 	contour!(x4,y4,dV1,levels=[0],linewidth=3,color=:green)
@@ -335,7 +335,7 @@ begin
 	gr()
 	p1=plot()
 	flechas!(p1,f_ejemplo1,[],[-2,2,-2,2],N=20)
-	contour!(x3,y3,V2,levels=[L3],linewidth=3,color=:red)
+	contour!(x3,y3,V2,levels=[L3],linewidth=3,color=:red,colorbar=false)
 	contour!(x3,y3,dV2,levels=[0],linewidth=3,color=:green)
 end
 
@@ -399,14 +399,13 @@ begin
 	p=plot()
 	flechas!(p,f_ejemplo1,[],[-2,2,-2,2],N=20)
 	trayectorias!(p,f_ejemplo1,[],[-2,2,-2,2],N=30)
-	contour!(x3,y3,V2,levels=[L3],linewidth=3,color=:red)
+	contour!(x3,y3,V2,levels=[L3],linewidth=3,color=:red,colorbar=false)
 	contour!(x3,y3,V1,levels=[L4],linewidth=3,color=:red)
 	plot!(title="Comparación de regiones",ratio=1)
 end
 
 # ╔═╡ Cell order:
 # ╠═02c15be0-defd-11ea-004b-45c4e09aa541
-# ╠═8aeae030-811f-11eb-0075-272d383103ef
 # ╟─28fccf20-d63c-11ea-3311-411f89a63431
 # ╟─309959f0-defd-11ea-34c3-71eeda7b523b
 # ╠═cd88fade-defd-11ea-2097-25b2d1eac285
@@ -426,7 +425,6 @@ end
 # ╟─440c2010-df04-11ea-2550-6f679efd6b07
 # ╠═c3aa90e0-df04-11ea-0736-5176e619708a
 # ╟─116e9d42-812f-11eb-327c-e107809f9603
-# ╠═ba6bf300-8122-11eb-0a3e-2d30a150250c
 # ╠═d4547220-8121-11eb-1591-ebb8d7742fcc
 # ╠═5eebc400-8123-11eb-029e-8bd1bef4612e
 # ╠═f9dcadc0-812e-11eb-005f-d751ee820296
