@@ -218,7 +218,7 @@ function flechas!(figura,f,p,rangos;N=10)
 	xmin,xmax,ymin,ymax=rangos #desestructurar un iterable (explicar)
 	longitud=max(abs(xmax-xmin),abs(ymax-ymin))/N
 	
-    #hago una maya de x e ys y pongo las flechas en cada punto
+    #hago una malla de x e ys y pongo las flechas en cada punto
 	x1s=xmin:((xmax-xmin)/N):xmax
 	x2s=ymin:((ymax-ymin)/N):ymax
 
