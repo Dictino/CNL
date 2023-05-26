@@ -447,6 +447,12 @@ function popov(H,K,alpha)
 	title!("La recta ha de estar por encima de la función asociada")
 end
 
+# ╔═╡ d59b855a-f60a-48b4-a188-996376609560
+Pkg.status()
+
+# ╔═╡ 30c8aab1-881b-4697-8393-862139e91b48
+
+
 # ╔═╡ fee20250-d8bb-11ea-299c-6d093b0edd20
 K_max=1000
 
@@ -655,6 +661,8 @@ end
 # ╠═5c92fab0-c913-11eb-0542-2bd8ac7560de
 # ╟─2cfce6fe-c915-11eb-1f34-5be3aed8045a
 # ╠═497f9250-d8bc-11ea-194d-77979b94814d
+# ╠═d59b855a-f60a-48b4-a188-996376609560
+# ╠═30c8aab1-881b-4697-8393-862139e91b48
 # ╠═fee20250-d8bb-11ea-299c-6d093b0edd20
 # ╠═cb075200-d8bb-11ea-234b-6d4b6fca9083
 # ╠═f2567110-dbe0-11ea-24a0-4d1a72151516
