@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.9
+# v0.19.26
 
 using Markdown
 using InteractiveUtils
@@ -598,7 +598,7 @@ end
 # ╔═╡ e042eeee-3490-11eb-1406-058ee6753c1f
 let
 	y=trayectoria(0.5,r,50)
-	p1=plot(y,title="r=$r",marker=:dot,markersize=:2,label=:none,ylimits=(0,1))
+	p1=plot(y,title="r=$r",marker=:dot,markersize=2,label=:none,ylimits=(0,1))
 	k=length(y)
 		p2=scatter()
 	if ver

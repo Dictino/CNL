@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.9
+# v0.19.26
 
 using Markdown
 using InteractiveUtils
@@ -396,7 +396,7 @@ begin
 	end
 	
 	# Salida 
-	fig1=plot(sol,vars=(0,1), xaxis=L"t",yaxis=L"y(t)",label=L"y(t)")
+	fig1=plot(sol,idxs=(0,1), xaxis=L"t",yaxis=L"y(t)",label=L"y(t)")
 		
 	#Estados
 	fig2=plot(sol, xaxis="t",yaxis=L"x(t)", label=:none)

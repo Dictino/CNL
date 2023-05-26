@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.18
+# v0.19.26
 
 using Markdown
 using InteractiveUtils
@@ -491,17 +491,17 @@ let
 	prob = ODEProblem(derivadas_ejemplo2,x0,tspan,parametros);
 	sol = solve(prob,Tsit5());
 	
-	# Salida y referencia vars=(0,3) significa pintar x3 frente a t
-	fig1=plot(sol,vars=(0,3), xaxis=L"t",yaxis=L"y(t)",label=L"y(t)")
-	fig1=plot!(fig1,sol,vars=( (t,x1)->(t,referencia_2(t)[1]) , 0, 1 ), 					label=L"y_r", linestyle=:dot, linewidth=2) 
+	# Salida y referencia idxs=(0,3) significa pintar x3 frente a t
+	fig1=plot(sol,idxs=(0,3), xaxis=L"t",yaxis=L"y(t)",label=L"y(t)")
+	fig1=plot!(fig1,sol,idxs=( (t,x1)->(t,referencia_2(t)[1]) , 0, 1 ), 					label=L"y_r", linestyle=:dot, linewidth=2) 
 		
 	fig2=plot(sol, xaxis="t",yaxis=L"x(t)", label=:none)
-	#fig2=plot(sol,vars=(0,1), xaxis=L"t",yaxis=L"x(t)",label=L"x_1")
-	#fig2=plot!(sol,vars=(0,2), ,label=L"x_2")
+	#fig2=plot(sol,idxs=(0,1), xaxis=L"t",yaxis=L"x(t)",label=L"x_1")
+	#fig2=plot!(sol,idxs=(0,2), ,label=L"x_2")
 	
 
 	#Señal de control, u no se guarda, hay que recalcularlo
-	fig3=plot(sol, vars=((t,x1,x2, x3)->(t,control_2([x1,x2,x3],parametros,t)),0, 1, 2, 3),
+	fig3=plot(sol, idxs=((t,x1,x2, x3)->(t,control_2([x1,x2,x3],parametros,t)),0, 1, 2, 3),
 		    xaxis=L"t",yaxis=L"u(t)",legend=false)
 	l = @layout [a ; b ; c]
 	figura=plot(fig1,fig2,fig3, layout=l)
