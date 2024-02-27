@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.26
+# v0.19.40
 
 using Markdown
 using InteractiveUtils
@@ -357,17 +357,17 @@ let
 	sol = solve(prob,Tsit5());
 	
 	# Salida y referencia vars=(0,1) significa pintar variable 1 (el x1) vs variable 0 (el tiempo), cambialo para mostrar otras variables si es necesario
-	fig1=plot(sol,vars=(0,1), xaxis=L"t",yaxis=L"y(t)",label=L"y(t)")
+	fig1=plot(sol,idxs=(0,1), xaxis=L"t",yaxis=L"y(t)",label=L"y(t)")
 	#referencia, x1 no se usa para nada pero espera que le pases algún estado
-	fig1=plot!(fig1,sol,vars=( (t,x1)->(t,referencia_1(t)[1]) , 0, 1 ), 					label=L"y_r", linestyle=:dot, linewidth=2) 
+	fig1=plot!(fig1,sol,idxs=( (t,x1)->(t,referencia_1(t)[1]) , 0, 1 ), 					label=L"y_r", linestyle=:dot, linewidth=2) 
 		
 	#Pinto los estados, si no quiero etiqueta
 	fig2=plot(sol, xaxis="t",yaxis=L"x(t)", label=:none)
-	#fig2=plot(sol,vars=(0,1), xaxis=L"t",yaxis=L"x(t)",label=L"x_1")
-	#fig2=plot!(sol,vars=(0,2), ,label=L"x_2")
+	#fig2=plot(sol,idxs=(0,1), xaxis=L"t",yaxis=L"x(t)",label=L"x_1")
+	#fig2=plot!(sol,idxs=(0,2), ,label=L"x_2")
 	    
 	#Señal de control, u no se guarda, hay que recalcularlo
-	fig3=plot(sol, vars=((t,x1,x2)->(t,control_1([x1,x2],parametros,t)),0, 1, 2),
+	fig3=plot(sol, idxs=((t,x1,x2)->(t,control_1([x1,x2],parametros,t)),0, 1, 2),
 		    xaxis=L"t",yaxis=L"u(t)",legend=false)
 	l = @layout [a ; b ; c]
 	figura=plot(fig1,fig2,fig3, layout=l)
