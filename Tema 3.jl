@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.40
+# v0.19.36
 
 using Markdown
 using InteractiveUtils
@@ -105,7 +105,7 @@ end
 conjeturas(H1,sliderAK)
 
 # ╔═╡ 29e11c20-90ae-11eb-1348-0f5a981d3361
-md"Esto sugiere que es estable en el sector $[-\frac{10}{3}, \infty)$
+md"Esto sugiere que es estable en el sector $(-\frac{10}{3}, \infty)$
 Podemos ver analíticamente el -10/3 observando que el corte es el $w_c=0$ y por lo tanto $H(w_c)=\frac{0+3}{(0+5)(0+2)}=\frac{3}{10}
  \to H(0)k=-1 \to k=-10/3$
 
