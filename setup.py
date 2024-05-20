@@ -10,13 +10,9 @@ setuptools.setup(
           'pluto = plutoserver:setup_plutoserver',
       ]
   },
-  install_requires=['jupyter-server-proxy'],
+  install_requires=['jupyter-server-proxy @ git+http://github.com/fonsp/jupyter-server-proxy@3a58aa5005f942d0c208eab9a480f6ab171142ef'],
 )
 
-# because this is a demo of Pluto, we add some popular packages to the global package env and precompile
-# not sure if it's better to put this on the Project.toml...
-import os
-#os.system('julia -e "import Pkg; Pkg.add([\\"PlutoUI\\", \\"Plots\\", \\"OrdinaryDiffEq\\", \\"ModelingToolkit\\", \\"SymEngine\\", \\"LaTeXStrings\\",\\"ControlSystems\\",\\"Symbolics\\",\\"Latexify\\"]); Pkg.precompile()"')
-#lo he puesto en el proyecto al final así que sólo precompilo
 
+import os
 os.system('julia -e "import Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.precompile()"')
