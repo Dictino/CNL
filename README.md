@@ -38,7 +38,7 @@ Desde ahí se puede seleccionar el notebook que se desea abrir pinchando sobre l
 
 Si queréis probarlo **sin instalar nada** en vuestro ordenador (no es la opción recomendada y puede que no funcione ya que depende de un servicio externo y gratuito, pero cuando funciona es útil si queréis verlo en una tableta, teléfono o en un ordenador en el que no queréis instalar software) usad el siguiente enlace:
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Dictino/CNL/536af90?urlpath=pluto)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Dictino/CNL/d65c8a0?urlpath=pluto)
 
 Ojo que binder **no es persistente**, si hacéis un cambio y queréis guardarlo no uséis el botón de guardar sino el de exportar:
 
