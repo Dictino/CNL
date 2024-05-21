@@ -14,5 +14,5 @@ setuptools.setup(
 )
 
 
-import os
+# import os
 # os.system('julia -e "import Pkg; Pkg.activate(@__DIR__); Pkg.instantiate(); Pkg.precompile()"')

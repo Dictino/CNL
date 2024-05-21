@@ -28,13 +28,15 @@ julia> include("C://ruta//en//mi//ordenador//CNL.jl")
 
 Esto **tardará un buen rato** la primera vez ya que tiene que decargar e instalar todos los paquetes que usará el curso (Pluto,  Plots, OrdinaryDiffEq ModelingToolkit, SymEngine...) así que aprovechad para ver algún tema de CNL ;)
 
+Si se quejase por un problema de versiones probad a borrar "Manifest.toml" e "instalado" y volved a intentarlo.
+
 Cuando termine se abrirá pluto en el navegador:
 
 ![pluto](https://github.com/Dictino/CNL/blob/main/Im%C3%A1genes/pluto.png?raw=true)
 
 Desde ahí se puede seleccionar el notebook que se desea abrir pinchando sobre la barra, buscando el fichero y pulsando Open.
 
-Si queréis probarlo **sin instalar nada** en vuestro ordenador (no es la opción recomendada, pero es muy útil si queréis verlo en una tableta, teléfono o en un ordenador en el que no queréis instalar software) usad el siguiente enlace:
+Si queréis probarlo **sin instalar nada** en vuestro ordenador (no es la opción recomendada y puede que no funcione ya que depende de un servicio externo y gratuito, pero cuando funciona es útil si queréis verlo en una tableta, teléfono o en un ordenador en el que no queréis instalar software) usad el siguiente enlace:
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Dictino/CNL/536af90?urlpath=pluto)
 
