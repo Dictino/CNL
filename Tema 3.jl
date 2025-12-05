@@ -117,7 +117,8 @@ md"""# Criterio del círculo
 ## Antes de empezar comprueba que:
 + Como es una funcion de transferencia ya es contolable/observable (OK)
 + No hay integradores ni realimentación directa $$d=0$$
-¿Es estable? Usa los casos A y B. Si no lo es usa los casos C y D.
+¿Es estable? Pueden usarse todos los casos A, B, C y D (rodear 0 veces es lo mismo que no rodear). 
+Si no lo es sólo se pueden usar los casos C y D (si hay que rodear la respuesta en frecuencia no puedes estar dentro ni a la derecha de un circulo o linea...).
 
 **Cada caso** de los que se puede usar da **un rango** posible de ganancias
 """
@@ -125,10 +126,10 @@ md"""# Criterio del círculo
 # ╔═╡ 9ca66610-d985-11ea-0426-13ef5f785091
 function circulo(H,K1,K2,caso)	
 	"""hay cuatro casos se pueden determinar por los signos de k1 y k2
-	------ Estables
+	------ Si es estable se pueden usar todos
 	A) 0=k1<k2 recta a la izquierda
 	B) k1<0<k2 dentro del circulo
-	------ Inestables
+	------ Si es inestabe sólo estos dos
 	C) 0<k1<=k2 La respueta rodea al circulo en sentido antihorario n veces donde n es el número de polos inestables
 	D) k1<k2<0 La respuesta de -H rodea en el sentido antihorario n veces el circulo D(-k1,-k2) es como C pero con todo negado"""
 
@@ -138,19 +139,19 @@ function circulo(H,K1,K2,caso)
 	end
 	if caso=='A'
 		if (K1==0)&(0<K2)
-			titulo="Recta a la izquierda"
+			titulo="Recta a la izquierda (solo para plantas estables)"
 		else
 			return "Error: en el caso A 0=k1<k2"
 		end
 	elseif caso=='B'
 		if (K1<0)&(0<K2)
-			titulo="El circulo rodea la respuesta en frecuencia"
+			titulo="El circulo rodea la respuesta en frecuencia (sólo para plantas estables)"
 		else
 			return "Error: en el caso B k1<0<k2"
 		end
 	elseif caso=='C'
 		if (0<K1)&(K1<=K2)
-			titulo="La respueta rodea al circulo en sentido antihorario n veces\n donde n es el número de polos inestables"
+			titulo="La respueta rodea al circulo en sentido antihorario n veces\n donde n es el número de polos inestables (pueden ser 0)"
 		else
 			return "Error: en el caso C 0<k1<=k2 "
 		end
@@ -252,7 +253,10 @@ end
 circulo(H1,k1b,k2b,'B')
 
 # ╔═╡ 65071560-90dc-11eb-24f3-3d03b8461507
-md"Este caso es igual que las conjeturas AK es decir $[-\frac{10}{3}, \infty)$ "
+md"Este caso es igual que las conjeturas AK es decir $[-\frac{10}{3}, \infty)$ 
+¿Qué ocurre con los casos C y D? en este caso no aportan nada nuevo, dejamos como ejercicio comprobar que:
+C el círculo queda a la izquierda de la curva, haciendo el círculo más y más grande (haciendo k1 tender a cero) acabamos en el caso A (el cícrulo se convierte en todo lo que hay a la derecha de la recta del caso A)
+D No hay manera de qu"
 
 # ╔═╡ 1ae51110-d98c-11ea-3b02-1ddccacadb56
 md"## Planta inestable
