@@ -2,13 +2,9 @@
 Herramientas del curso de [CNL](http://portal.uned.es/portal/page?_pageid=93,70656202&_dad=portal&_schema=PORTAL&idAsignatura=31104178&idTitulacion=310401) del [Máster en Ingeniería de Sistemas y Control UNED/UCM](https://cv4.ucm.es/moodle/course/view.php?id=4056)
 
 ## Instalación
-Para ejecutar los ejemplos lo primero que necesitamos es instalar Julia, para ello lo mejor es ir a https://julialang.org/ y visitar su página de [descargas](https://julialang.org/downloads/) y descargar a última versión estable.
+Para ejecutar los ejemplos lo primero que necesitamos es instalar Julia, para ello lo mejor es ir a https://julialang.org/ y visitar su página de [descargas](https://julialang.org/downloads/) y seguir las instrucciones para instalar la última versión estable.
 
-La instalación es trivial, en windows o mac basta con ejecutar el fichero descargado.
-
-En Linux basta con descomprimir el fichero tar en una carpeta cualquiera de vuestra elección y después ejecutar julia que se encuentra en la subcarpeta /bin/julia. (Por comodidad es conveniente crear un enlace simbólico desde la carpeta donde se encuentra julia a una carpeta que esté en el path ej. ```sudo ln -s $(pwd)/julia /bin/julia```)
-
-A continuación, desgargad los ficheros en vuestro ordenador y hecho esto desde un terminal:
+A continuación, desgargad los ficheros de este repositorio en vuestro ordenador y hecho esto desde un terminal:
 
 ```
 $ julia "C:\ruta\en\mi\ordenador\CNL.jl"
@@ -35,14 +31,6 @@ Cuando termine se abrirá pluto en el navegador:
 ![pluto](https://github.com/Dictino/CNL/blob/main/Im%C3%A1genes/pluto.png?raw=true)
 
 Desde ahí se puede seleccionar el notebook que se desea abrir pinchando sobre la barra, buscando el fichero y pulsando Open.
-
-Si queréis probarlo **sin instalar nada** en vuestro ordenador (no es la opción recomendada y puede que no funcione ya que depende de un servicio externo y gratuito, pero cuando funciona es útil si queréis verlo en una tableta, teléfono o en un ordenador en el que no queréis instalar software) usad el siguiente enlace:
-
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Dictino/CNL/d65c8a0?urlpath=pluto)
-
-Ojo que binder **no es persistente**, si hacéis un cambio y queréis guardarlo no uséis el botón de guardar sino el de exportar:
-
-![pluto](https://github.com/Dictino/CNL/blob/main/Im%C3%A1genes/Boton_exportar.png?raw=true)
 
 *NOTA:* No es necesario usar Pluto ni este método para leer o utilizar el código, los notebooks .jl son scripts normales de julia y podrían ejecutarse de la misma forma que CNL.jl y abrise con cualquier editor de textos. Eso sí, se perdería la interactividad, y para mostrar los resultados había cambiar el código usar ```@show variable``` o ```println("texto que sea"")``` y para los graficos habría que ```display(figura_correspondiente)```.
 
